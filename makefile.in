@@ -1,6 +1,5 @@
 CC=@CC@
 CFLAGS=@CFLAGS@
-AIGLIB=@AIGLIB@
 DEP=@DEP@
 
 BUILD_PATH=build/
@@ -17,7 +16,7 @@ aiger:
 $(BUILD_PATH)%.o: $(SRC_PATH)%.cpp
 	$(CC) $(CFLAGS) $(INCLUDE) -c $< -o $@
 
-amulet: $(OBJECTS)
+amulet: $(OBJECTS) aiger
 	$(CC) $(CFLAGS)  -o  $@ $(OBJECTS) includes/aiger.o -lgmp
 
 clean:
