@@ -16,9 +16,6 @@ To appear in Proc. 14th Intl. Conference on Tools and Algorithms for the Constru
 
 Dependencies: `libgmp` (https://gmplib.org/)
 
-A doxygen documentation is provided in the folder `doc`, which can be seen
-by opening `doc/index.html'
-
 Use `./configure.sh && make` to configure and build `AMulet 2.0`.
 
 
