@@ -2,40 +2,40 @@
 /*! \file aig.h
     \brief contains functions to parse and manipulate the input AIG
 
-  Part of AMulet2.0 : AIG Multiplier Verification Tool.
-  Copyright (C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
-#ifndef _aig_H
-#define _aig_H
+#ifndef AMULET2_SRC_AIG_H_
+#define AMULET2_SRC_AIG_H_
 /*------------------------------------------------------------------------*/
 #include <assert.h>
 
 #include "signal_statistics.h"
 
-extern "C"{
+extern "C" {
   #include "../includes/aiger.h"
 }
 /*------------------------------------------------------------------------*/
 
-extern unsigned M;  ///< stores the maximum variable num of the input AIG
-extern unsigned NN; ///< stores the number of inputs of the input AIG
+extern unsigned M;   // /< stores the maximum variable num of the input AIG
+extern unsigned NN;  // /< stores the number of inputs of the input AIG
 
-extern unsigned a0;   ///< input value for the LSB of input vector A
-extern unsigned al;   ///< input value for the MSB of input vector A
-extern unsigned ainc; ///< distance between aiger values of A
+extern unsigned a0;    // /< input value for the LSB of input vector A
+extern unsigned al;    // /< input value for the MSB of input vector A
+extern unsigned ainc;  // /< distance between aiger values of A
 
-extern unsigned b0;   ///< input value for the LSB of input vector B
-extern unsigned bl;   ///< input value for the MSB of input vector B
-extern unsigned binc; ///< distance between aiger values of B
+extern unsigned b0;    // /< input value for the LSB of input vector B
+extern unsigned bl;    // /< input value for the MSB of input vector B
+extern unsigned binc;  // /< distance between aiger values of B
 
 
-/// aiger * storing the generated miter during '-substitution'
-/// Will be transformed into CNF and printed to the provided output file.
+// / aiger * storing the generated miter during '-substitution'
+// / Will be transformed into CNF and printed to the provided output file.
 extern aiger * miter;
 
-/// aiger * storing the generated rewritten AIG during '-substitution'
-/// Will be printed to the provided output file.
+// / aiger * storing the generated rewritten AIG during '-substitution'
+// / Will be printed to the provided output file.
 extern aiger * rewritten;
 
 /*------------------------------------------------------------------------*/
@@ -74,7 +74,7 @@ void reset_aig_parsing();
             Equal to zero if everything went right.
    )
 */
-const char * aiger_open_and_read_to_model (const char * input_name);
+const char * aiger_open_and_read_to_model(const char * input_name);
 
 /**
     Checks whether the given value corrensponds to an input of 'aiger* model'
@@ -155,7 +155,7 @@ const char* get_model_inputs_name(unsigned i);
 
     @return an unsigned integer corresponding to the value of the i'th output
 */
-unsigned slit (unsigned i);
+unsigned slit(unsigned i);
 
 
 /**
@@ -167,4 +167,4 @@ unsigned slit (unsigned i);
 */
 int write_model(FILE *file);
 
-#endif
+#endif  // AMULET2_SRC_AIG_H_

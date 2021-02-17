@@ -2,12 +2,12 @@
 /*! \file polynomial.h
     \brief contains arithmetic operations for polynomials
 
-  Part of AMulet2.0 : AIG Multiplier Verification Tool.
-  Copyright (C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
-#ifndef _polynomial_H
-#define _polynomial_H
+#ifndef AMULET2_SRC_POLYNOMIAL_H_
+#define AMULET2_SRC_POLYNOMIAL_H_
 /*------------------------------------------------------------------------*/
 #include <list>
 #include <deque>
@@ -19,16 +19,14 @@
 /** \class Polynomial
     This class is used to polynomials.
 */
-
 class Polynomial {
-  int idx; ///< index as used in pac proofs
+  int idx;  // /< index as used in pac proofs
 
-  int level = 1; ///< level of polynomials needed for certificates
+  int level = 1;  // /< level of polynomials needed for certificates
 
-  std::deque<Monomial*> mon; ///< sorted deque of monomials
+  std::deque<Monomial*> mon;  // /< sorted deque of monomials
 
-public:
-
+ public:
   /** Constructor */
   Polynomial();
 
@@ -37,67 +35,60 @@ public:
      @param _idx default for index is zero
 
   */
-  Polynomial(int _idx);
+  explicit Polynomial(int _idx);
 
   /** Getter for member idx
 
       @return integer
   */
-  int get_idx() const {return idx;};
+  int get_idx() const {return idx;}
 
   /**
       Setter for idx
 
       @param idx_ integer
   */
-  void set_idx(int idx_) {idx = idx_;};
+  void set_idx(int idx_) {idx = idx_;}
 
   /** Getter for member level
 
       @return integer
   */
-  int get_level() const {return level;};
+  int get_level() const {return level;}
 
   /**
       Setter for level
 
       @param level_ integer
   */
-  void set_level(int level_) {level = level_;};
+  void set_level(int level_) {level = level_;}
 
   /**
       Getter for begin of mon
 
       @return std::deque<Monomial*>::const_iterator
   */
-  std::deque<Monomial*>::const_iterator mon_begin() const {return mon.begin();};
+  std::deque<Monomial*>::const_iterator mon_begin() const {return mon.begin();}
 
   /**
       Getter for end of mon
 
       @return std::deque<Monomial*>::const_iterator
   */
-  std::deque<Monomial*>::const_iterator mon_end() const {return mon.end();};
+  std::deque<Monomial*>::const_iterator mon_end() const {return mon.end();}
 
   /**
       Appends monomial m to mon
 
       @param m Monomial*
   */
-  void mon_push_back(Monomial * m) {mon.push_back(m);};
-
-  /**
-      Prepends monomial m to mon 
-
-      @param m Monomial*
-  */
-  void mon_push_front(Monomial * m) {mon.push_front(m);};
+  void mon_push_back(Monomial * m) {mon.push_back(m);}
 
   /** Returns the leading term
 
       @return Term*
   */
-  Term * get_lt() const {return mon.front()->get_term();};
+  Term * get_lt() const {return mon.front()->get_term();}
 
   /**
       Copy routine
@@ -145,17 +136,17 @@ public:
 /**
     Enlarges the allocated size of mstack
 */
-void enlarge_mstack ();
+void enlarge_mstack();
 
 /**
     Sets the number of elements in the stack to 0
 */
-void clear_mstack ();
+void clear_mstack();
 
 /**
     Deallocates mstack
 */
-void deallocate_mstack ();
+void deallocate_mstack();
 
 /**
     Checks whether mstack is empty
@@ -230,17 +221,27 @@ Polynomial * multiply_poly_with_constant(const Polynomial *p1, mpz_t c);
 */
 Polynomial * divide_by_term(const Polynomial * p1, const Term * t);
 
+/**
+    Appends p2 to p1
+
+    @param p1 Polynomial*
+    @param p2 Polynomial*
+
+    @return Polynomial*, [p1, p2]
+*/
+void link_poly(Polynomial *p1, const Polynomial *p2);
+
 /*---------------------------------------------------------------------------*/
-/// gmp for 1
+// / gmp for 1
 extern mpz_t one;
 
-/// gmp for -1
+// / gmp for -1
 extern mpz_t minus_one;
 
-/// gmp for 2
+// / gmp for 2
 extern mpz_t base;
 
-/// gmp for 2^NN
+// / gmp for 2^NN
 extern mpz_t mod_coeff;
 /*---------------------------------------------------------------------------*/
 /**
@@ -254,4 +255,5 @@ void init_mpz(unsigned exp);
     Clears all globally allocated gmp objects
 */
 void clear_mpz();
-#endif
+
+#endif  // AMULET2_SRC_POLYNOMIAL_H_

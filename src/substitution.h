@@ -1,18 +1,17 @@
 /*------------------------------------------------------------------------*/
 /* AMulet2 : AIG Multiplier Verification Tool.
  *
- * Copyright (C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+ * Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
  *
  * substitution.h: functions used for adder substitution
  */
 /*------------------------------------------------------------------------*/
-#ifndef _substitution_H
-#define _substitution_H
+#ifndef AMULET2_SRC_SUBSTITUTION_H_
+#define AMULET2_SRC_SUBSTITUTION_H_
 /*------------------------------------------------------------------------*/
 #include <vector>
 
 #include "gate.h"
-
 /*------------------------------------------------------------------------*/
 
 /**
@@ -31,7 +30,7 @@ bool all_outputs_are_xor();
 
 /**
     If the output of slice 2 has more than 3 parents, than the carry-in
-    of the final stage is the output of slice 0 (in the aoki benchmarks.)
+    of the final stage is the output of slice 0(in the aoki benchmarks.)
 
     @return False if output of slice 2 has more than 3 parents but output
     of slice 0 is single gate
@@ -191,7 +190,7 @@ void add_btor_adder();
 
     @return the negated aiger value of a
 */
-unsigned not_ (unsigned a);
+unsigned not_(unsigned a);
 
 /**
     Generates an AIG gate with inputs a and b
@@ -201,7 +200,7 @@ unsigned not_ (unsigned a);
 
     @return the value of the output gate
 */
-unsigned and_ (unsigned a, unsigned b);
+unsigned and_(unsigned a, unsigned b);
 
 /**
     Generates AIG gates for a implies b, using and_ and not_
@@ -211,7 +210,7 @@ unsigned and_ (unsigned a, unsigned b);
 
     @return the value of the output gate
 */
-unsigned implies_ (unsigned a, unsigned b);
+unsigned implies_(unsigned a, unsigned b);
 
 /**
     Generates AIG gates for a xnor b, using implies_ and and_
@@ -221,7 +220,7 @@ unsigned implies_ (unsigned a, unsigned b);
 
     @return the value of the output gate
 */
-unsigned xnor_ (unsigned a, unsigned b);
+unsigned xnor_(unsigned a, unsigned b);
 
 /**
     Builds the miter, where the the original_outputs and the rewritten_outputs
@@ -267,4 +266,4 @@ void generate_rewritten_aig();
 
 
 
-#endif
+#endif  // AMULET2_SRC_SUBSTITUTION_H_

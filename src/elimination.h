@@ -5,58 +5,49 @@
   This file contains all functions used for preprocessing the Gröbner basis
   and for reducing the specification by the slices.
 
-  Part of AMulet2.0 : AIG Multiplier Verification Tool.
-  Copyright (C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
-#ifndef _elimination_H
-#define _elimination_H
+#ifndef AMULET2_SRC_ELIMINATION_H_
+#define AMULET2_SRC_ELIMINATION_H_
 /*------------------------------------------------------------------------*/
 #include <string.h>
+
+#include <vector>
 
 #include "nss.h"
 #include "pac.h"
 #include "slicing.h"
 /*------------------------------------------------------------------------*/
-/// True, when the PAC proof format is involved
-extern bool pac;
+// / 1 for pac
+// / 2 for hybrid
+// / 3 for nss
+extern int proof;
 
-/// True, when the Nullstellensatz proof format is involved
-extern bool nss;
 /*------------------------------------------------------------------------*/
 // Functions used for PAC proofs
 
 /**
     Adds up the computed factors of a slice to compute the sliced specification
-    Prints PAC rules for the process. Used only when pac=1.
+    Prints PAC rules for the process. Used only when proof == 1 or proof == 2.
 
     @param file output file for PAC rules
 
     @return polynomial, which is the sum of all computed factors of a slice
 */
-Polynomial * add_up_factors(FILE * file);
-
-
-/**
-    Merges computed factors of a slice of the same level.
-    Prints PAC rules for the process. Used only when pac=1.
-
-    @param file output file for PAC rules
-    @param container vector containing the factors, ordered by level
-
-    @return vector of polynomials such that each polynomial has a unique level
-*/
-std::vector<Polynomial*> merge_factors
-    (FILE * file, std::vector<Polynomial*> container);
+Polynomial * add_up_factors(FILE * file, bool print);
 
 
 /**
     Adds up the computed sliced specifications.
-    Prints PAC rules for the process. Used only when pac=1.
+    Prints PAC rules for the process. Used only when proof == 1 or proof == 2.
 
     @param file output file for PAC rules
+
+    @return polynomial, which is the sum of all computed slice specifcations
 */
-void add_up_spec_of_slice(FILE * file);
+Polynomial * add_up_spec_of_slice(FILE * file, bool print);
 /*------------------------------------------------------------------------*/
 // These functions are used to eliminate by one gate constraint
 
@@ -90,7 +81,7 @@ Polynomial * reduce_by_one_poly(const Polynomial * p1, Gate * n, FILE * file);
 void remove_internal_xor_gates(FILE * file);
 
 /**
-    Remove all single-parent gates (only one loop)
+    Remove all single-parent gates(only one loop)
 
     @param file output file for PAC rules
 */
@@ -107,7 +98,7 @@ void remove_slice_minus_one_gates(FILE * file);
 // Variable elimination heuristics taken from AMulet1.0
 
 /**
-    Remove repeatedly all single gates (until completion)
+    Remove repeatedly all single gates(until completion)
 
     @param file output file for PAC rules
 */
@@ -219,4 +210,4 @@ void write_witnesses(const Polynomial * p, FILE * file);
 */
 void generate_witness(const Polynomial * p, const char * name);
 
-#endif
+#endif  // AMULET2_SRC_ELIMINATION_H_

@@ -3,12 +3,12 @@
     \brief contains the class Term and further functions to
     manipulate terms
 
-  Part of AMulet2.0 : AIG Multiplier Verification Tool.
-  Copyright (C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
-#ifndef _term_H
-#define _term_H
+#ifndef AMULET2_SRC_TERM_H_
+#define AMULET2_SRC_TERM_H_
 /*------------------------------------------------------------------------*/
 #include <stack>
 
@@ -21,24 +21,22 @@
 */
 
 class Term {
-  /// head variable
+  // / head variable
   const Var * variable;
 
-  /// tail in linked list
+  // / tail in linked list
   Term * rest;
 
-  /// reference counter
+  // / reference counter
   uint64_t ref;
 
-  /// hash value
+  // / hash value
   const uint64_t hash;
 
-  /// hash collision chain link
+  // / hash collision chain link
   Term * next;
 
-  public:
-
-
+ public:
   /** Constructor
 
       @param _v Var*
@@ -52,49 +50,49 @@ class Term {
 
       @return Var*
   */
-  const Var * get_var() const {return variable;};
+  const Var * get_var() const {return variable;}
 
   /** Getter for level of variable
 
       @return integer
   */
-  int get_var_level() const {return variable->get_level();};
+  int get_var_level() const {return variable->get_level();}
 
   /** Getter for num of variable
 
       @return integer
   */
-  int get_var_num() const {return variable->get_num();};
+  int get_var_num() const {return variable->get_num();}
 
   /** Getter for name of variable
 
       @return char*
   */
-  const char * get_var_name() const {return variable->get_name();};
+  const char * get_var_name() const {return variable->get_name();}
 
   /** Getter for member rest
 
       @return Term*
   */
-  Term * get_rest() const {return rest;};
+  Term * get_rest() const {return rest;}
 
   /** Getter for member hash
 
       @return uint64_t
   */
-  uint64_t get_hash() const {return hash;};
+  uint64_t get_hash() const {return hash;}
 
   /** Getter for member next
 
       @return Term*
   */
-  Term * get_next() const {return next;};
+  Term * get_next() const {return next;}
 
   /** Setter for member term
 
       @param t Term*
   */
-  void set_next(Term * t) {next = t;};
+  void set_next(Term * t) {next = t;}
 
   /** Getter for member ref
 
@@ -106,20 +104,20 @@ class Term {
 
       @return uint64_t
   */
-  uint64_t inc_ref() {return ++ref;};
+  uint64_t inc_ref() {return ++ref;}
 
   /** Decreases ref
 
       @return uint64_t
   */
-  uint64_t dec_ref() {return --ref;};
+  uint64_t dec_ref() {return --ref;}
 
   /**
       Copy routine
 
       @return A copy of the current term
   */
-  Term * copy() ;
+  Term * copy();
 
   /**
       Printing routine
@@ -154,8 +152,6 @@ class Term {
       @return true if v is contained in term
   */
   bool contains(const Var * v) const;
-
-
 };
 
 /*------------------------------------------------------------------------*/
@@ -170,14 +166,14 @@ class Term {
     @param variable Variable*
     @param rest Term*
 
-    @return computed hash value for the term (variable, rest)
+    @return computed hash value for the term(variable, rest)
 */
-uint64_t compute_hash_term (const Var * variable, const Term * rest);
+uint64_t compute_hash_term(const Var * variable, const Term * rest);
 
 /**
     Enlarges the hash table
 */
-void enlarge_terms ();
+void enlarge_terms();
 
 /**
     Builds a term, where variable is added at the front of rest
@@ -187,7 +183,7 @@ void enlarge_terms ();
 
     @return Term*
 */
-Term * new_term (const Var * variable, Term * rest);
+Term * new_term(const Var * variable, Term * rest);
 
 
 
@@ -199,7 +195,7 @@ Term * new_term (const Var * variable, Term * rest);
 
     @param t Term*
 */
-void deallocate_term (Term * t);
+void deallocate_term(Term * t);
 
 
 /**
@@ -245,4 +241,4 @@ Term * multiply_term(Term * t1, Term * t2);
 */
 Term * remainder(const Term * t, const Var * v);
 
-#endif
+#endif  // AMULET2_SRC_TERM_H_

@@ -3,26 +3,28 @@
     \brief contains the class Gate and further functions to
     organize the gate structure, such as initializing the gate constraints
 
-  Part of AMulet2.0 : AIG Multiplier Verification Tool.
-  Copyright (C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
-#ifndef _gate_H
-#define _gate_H
+#ifndef AMULET2_SRC_GATE_H_
+#define AMULET2_SRC_GATE_H_
 /*------------------------------------------------------------------------*/
+#include <list>
 #include <map>
 #include <queue>
+#include <string>
 
 #include "aig.h"
 #include "polynomial.h"
 /*------------------------------------------------------------------------*/
-/// set to true when the last slice contains an xor_chain
+// / set to true when the last slice contains an xor_chain
 extern bool xor_chain;
 
-/// set to true when the multiplier contains a booth pattern
+// / set to true when the multiplier contains a booth pattern
 extern bool booth;
 
-/// set to true when a signed or unsigned multiplier is verified
+// / set to true when a signed or unsigned multiplier is verified
 extern bool signed_mult;
 /*------------------------------------------------------------------------*/
 
@@ -30,75 +32,73 @@ extern bool signed_mult;
   Internal structure to represent the AIG graph.
 */
 class Gate {
-
-  /// Variable of the gate, as used in the polynomials
+  // / Variable of the gate, as used in the polynomials
   const Var * v;
 
-  /// True if gate is an input
+  // / True if gate is an input
   bool input;
 
-  /// True if the gate is an output s_i
+  // / True if the gate is an output s_i
   bool output;
 
-  /// True if the gate is an output in the aig
+  // / True if the gate is an output in the aig
   bool aig_output = 0;
 
-  /// True if gate is identified as a partial product
+  // / True if gate is identified as a partial product
   bool partial_product = 0;
 
-  /// Distance to inputs
+  // / Distance to inputs
   int level = 0;
 
-  /// True if gate belongs to xor_chain in last slice
+  // / True if gate belongs to xor_chain in last slice
   bool xor_chain = 0;
 
-  /// is set to 1 for root node, 2 for internal nodes of XORs
+  // / is set to 1 for root node, 2 for internal nodes of XORs
   int  xor_gate = 0;
 
-  /// Counts how often gate is used in bigger slice
+  // / Counts how often gate is used in bigger slice
   int carry_gate = 0;
 
-  /// slice a gate is attached to
+  // / slice a gate is attached to
   int slice = -1;
 
-  /// True if circuit is a prop_gen_gate (-substitute)
+  // / True if circuit is a prop_gen_gate(-substitute)
   bool prop_gen_gate = 0;
 
-  /// True if gate is identified to belong to complex fsa (-substitute)
+  // / True if gate is identified to belong to complex fsa(-substitute)
   bool fsa = 0;
 
-  /// True if gate is input of complex fsa (-substitute)
+  // / True if gate is input of complex fsa(-substitute)
   int fsa_inp = 0;
 
-  /// True if gate occurs negative (-substitute)
+  // / True if gate occurs negative(-substitute)
   bool neg = 0;
 
-  /// True if gate has been moved during fix_xors
+  // / True if gate has been moved during fix_xors
   bool moved = 0;
 
-  /// True if gate is identified to belong to booth pattern
+  // / True if gate is identified to belong to booth pattern
   bool bo = 0;
 
-  /// True if gate is eliminated during preprocessing
+  // / True if gate is eliminated during preprocessing
   bool elim = 0;
 
-  /// Polynomial implied by the aig gate
+  // / Polynomial implied by the aig gate
   Polynomial * gate_constraint = 0;
 
-  /// Polynomial generated as co-factor for nss proofs (-certify)
+  // / Polynomial generated as co-factor for nss proofs(-certify)
   Polynomial * co_factor = 0;
 
-  /// Used to store all dependencies in nss proofs  (-certify)
+  // / Used to store all dependencies in nss proofs (-certify)
   std::map<Gate*, Polynomial*> ancestors;
 
-  /// list of gates that are parents
+  // / list of gates that are parents
   std::list<Gate*> parents;
 
-  /// list of gates that are children
+  // / list of gates that are children
   std::list<Gate*> children;
 
-public:
-
+ public:
   /**
       Constructor
       Calls constructor of Var
@@ -107,285 +107,286 @@ public:
       @param name_ string name of the variable
       @param level position in order of the variable
   */
-  Gate (int n_, std::string name_, int level_, bool input_ = 0, bool output_ = 0);
+  Gate(
+    int n_, std::string name_, int level_, bool input_ = 0, bool output_ = 0);
 
   /**
       Getter for v
 
       @return member v
   */
-  const Var * get_var() const {return v;};
+  const Var * get_var() const {return v;}
 
   /**
       Getter for number of v
 
       @return integer
   */
-  int get_var_num() const {return v->get_num();};
+  int get_var_num() const {return v->get_num();}
 
   /**
       Getter for name of v
 
       @return char*
   */
-  const char * get_var_name()const {return v->get_name();};
+  const char * get_var_name()const {return v->get_name();}
 
   /**
       Getter for input
 
       @return member input
   */
-  bool get_input()  const {return input;};
+  bool get_input()  const {return input;}
 
   /**
       Getter for output
 
       @return member output
   */
-  bool get_output() const {return output;};
+  bool get_output() const {return output;}
 
   /**
       Getter for partial_product
 
       @return member partial_product
   */
-  bool get_pp() const {return partial_product;};
+  bool get_pp() const {return partial_product;}
 
   /**
       Sets partial_product to true
   */
-  void mark_pp() {partial_product = 1;};
+  void mark_pp() {partial_product = 1;}
 
   /**
       Getter for  aig_output
 
       @return member  aig_output
   */
-  bool get_aig_output() const {return aig_output;};
+  bool get_aig_output() const {return aig_output;}
 
   /**
       Sets aig_output to true
   */
-  void mark_aig_output() {aig_output = 1;};
+  void mark_aig_output() {aig_output = 1;}
 
   /**
       Getter for level
 
       @return member level
   */
-  int get_level() const {return level;};
+  int get_level() const {return level;}
 
   /**
       Setter for level
 
       @param l integer
   */
-  void set_level(int l) {level = l;};
+  void set_level(int l) {level = l;}
 
   /**
       Getter for xor_chain
 
       @return member xor_chain
   */
-  bool get_xor_chain() const {return xor_chain;};
+  bool get_xor_chain() const {return xor_chain;}
 
   /**
       Sets xor_chain to true
   */
-  void mark_xor_chain() {xor_chain = 1;};
+  void mark_xor_chain() {xor_chain = 1;}
 
   /**
       Getter for xor_gate
 
       @return member xor_gate
   */
-  int get_xor_gate() const {return xor_gate;};
+  int get_xor_gate() const {return xor_gate;}
 
   /**
       Setter for xor_gate
 
       @param val integer
   */
-  void set_xor_gate(int val) {xor_gate = val;};
+  void set_xor_gate(int val) {xor_gate = val;}
 
   /**
       Getter for carry_gate
 
       @return member carry_gate
   */
-  int get_carry_gate() const {return carry_gate;};
+  int get_carry_gate() const {return carry_gate;}
 
   /**
       Setter for carry_gate
 
       @param integer
   */
-  void set_carry_gate(int val) {carry_gate = val;};
+  void set_carry_gate(int val) {carry_gate = val;}
 
   /**
       Increases carry_gate
   */
-  void inc_carry_gate() {carry_gate++;};
+  void inc_carry_gate() {carry_gate++;}
 
   /**
       Decreases carry_gate
   */
-  void dec_carry_gate() {carry_gate--;};
+  void dec_carry_gate() {carry_gate--;}
 
   /**
       Getter for slice
 
       @return member slice
   */
-  int get_slice() const {return slice;};
+  int get_slice() const {return slice;}
 
   /**
       Setter for slice
 
       @param val integer
   */
-  void set_slice(int val) {slice = val;};
+  void set_slice(int val) {slice = val;}
 
   /**
       Increases slice
   */
-  void inc_slice() {slice++;};
+  void inc_slice() {slice++;}
 
   /**
       Decreases slice
   */
-  void dec_slice() {slice--;};
+  void dec_slice() {slice--;}
 
   /**
       Getter for prop_gen_gate
 
       @return member prop_gen_gate
   */
-  bool get_prop_gen_gate() const {return prop_gen_gate;};
+  bool get_prop_gen_gate() const {return prop_gen_gate;}
 
   /**
       Sets prop_gen_gate to true
   */
-  void mark_prop_gen_gate() {prop_gen_gate = 1;};
+  void mark_prop_gen_gate() {prop_gen_gate = 1;}
 
   /**
       Sets prop_gen_gate to false
   */
-  void unmark_prop_gen_gate() {prop_gen_gate = 0;};
+  void unmark_prop_gen_gate() {prop_gen_gate = 0;}
 
   /**
       Getter for fsa
 
       @return member fsa
   */
-  bool get_fsa() const {return fsa;};
+  bool get_fsa() const {return fsa;}
 
   /**
       Sets fsa to true
   */
-  void mark_fsa() {fsa = 1;};
+  void mark_fsa() {fsa = 1;}
 
   /**
       Getter for fsa_inp
 
       @return member fsa_inp
   */
-  int get_fsa_inp() const {return fsa_inp;};
+  int get_fsa_inp() const {return fsa_inp;}
 
   /**
       Increases fsa_inp
   */
-  void inc_fsa_inp() {fsa_inp++;};
+  void inc_fsa_inp() {fsa_inp++;}
 
   /**
       Sets fsa_inp to 0
   */
-  void reset_fsa_inp() {fsa_inp = 0;};
+  void reset_fsa_inp() {fsa_inp = 0;}
 
   /**
       Getter for neg
 
       @return member neg
   */
-  bool get_neg() const {return neg;};
+  bool get_neg() const {return neg;}
 
   /**
       Setter for neg
 
       @param val Boolean
   */
-  void set_neg(bool val) {neg = val;};
+  void set_neg(bool val) {neg = val;}
 
   /**
       Getter for moved
 
       @return member moved
   */
-  bool get_moved() const {return moved;};
+  bool get_moved() const {return moved;}
 
   /**
       Sets moved to true
   */
-  void mark_moved() {moved = 1;};
+  void mark_moved() {moved = 1;}
 
   /**
       Getter for bo
 
       @return member bo
   */
-  bool get_bo() const {return bo;};
+  bool get_bo() const {return bo;}
 
   /**
       Sets bo to true
   */
-  void mark_bo() {bo = 1;};
+  void mark_bo() {bo = 1;}
 
   /**
       Getter for elim
 
       @return member elim
   */
-  bool get_elim() const {return elim;};
+  bool get_elim() const {return elim;}
 
   /**
       Sets elim to true
   */
-  void mark_elim(){elim = 1;};
+  void mark_elim() {elim = 1;}
 
   /**
       Getter for gate_constraint
 
       @return member gate_constraint
   */
-  Polynomial * get_gate_constraint() const {return gate_constraint;};
+  Polynomial * get_gate_constraint() const;
 
   /**
       Setter for gate_constraint
 
       @param p Polynomial *
   */
-  void set_gate_constraint(Polynomial * p) {gate_constraint = p;};
+  void set_gate_constraint(Polynomial * p) {gate_constraint = p;}
 
   /**
       Prints the gate constraint
 
       @param file output file
   */
-  void print_gate_constraint(FILE * file) const { gate_constraint->print(file);};
+  void print_gate_constraint(FILE * file) const { gate_constraint->print(file);}
 
   /**
       Getter for co_factor
 
       @return member co_factor
   */
-  Polynomial * get_cofactor() const {return co_factor;};
+  Polynomial * get_cofactor() const {return co_factor;}
 
   /**
       Setter for co_factor
 
       @param p Polynomial*
   */
-  void set_cofactor(Polynomial * p) {co_factor = p;};
+  void set_cofactor(Polynomial * p) {co_factor = p;}
 
   /**
       Getter for begin of ancestors
@@ -394,7 +395,7 @@ public:
   */
   std::map<Gate*, Polynomial*>::const_iterator anc_begin() const {
     return ancestors.begin();
-  };
+  }
 
   /**
       Getter for end of ancestors
@@ -403,7 +404,7 @@ public:
   */
   std::map<Gate*, Polynomial*>::const_iterator anc_end()   const {
     return ancestors.end();
-  };
+  }
 
   /**
       Searches for gate n in ancestors
@@ -413,15 +414,15 @@ public:
   */
   std::map<Gate*, Polynomial*>::iterator search_in_anc(Gate *n) {
     return ancestors.find(n);
-  };
+  }
 
   /**
-      Adds the tuple (n,p) to the ancestors
+      Adds the tuple(n,p) to the ancestors
 
       @param n Gate*
       @param p Polynomial*
   */
-  void set_ancestor (Gate *n, Polynomial * p) {ancestors[n] = p;};
+  void set_ancestor(Gate *n, Polynomial * p) {ancestors[n] = p;}
 
   /**
       Getter for begin of parents
@@ -430,7 +431,7 @@ public:
   */
   std::list<Gate*>::const_iterator parents_begin() const {
     return parents.begin();
-  };
+  }
 
   /**
       Getter for end of parents
@@ -439,35 +440,35 @@ public:
   */
   std::list<Gate*>::const_iterator parents_end()   const {
     return parents.end();
-  };
+  }
 
   /**
       Getter for size of parents
 
       @return size_t
   */
-  size_t parents_size() const {return parents.size();};
+  size_t parents_size() const {return parents.size();}
 
   /**
       Getter for front of parents
 
       @return Gate*
   */
-  Gate * parents_front() const {return parents.front();};
+  Gate * parents_front() const {return parents.front();}
 
   /**
       Appends gate n to the parents
 
       @param n Gate*
   */
-  void parents_push_back(Gate * n) {parents.push_back(n);};
+  void parents_push_back(Gate * n) {parents.push_back(n);}
 
   /**
       Removes gate n from the parents
 
       @param n Gate*
   */
-  void parents_remove(Gate * n) {parents.remove(n);};
+  void parents_remove(Gate * n) {parents.remove(n);}
 
   /**
       Getter for begin of children
@@ -476,7 +477,7 @@ public:
   */
   std::list<Gate*>::const_iterator children_begin() const {
     return children.begin();
-  };
+  }
 
   /**
       Getter for end of children
@@ -485,56 +486,56 @@ public:
   */
   std::list<Gate*>::const_iterator children_end()  const {
     return children.end();
-  };
+  }
 
   /**
       Getter for size of children
 
       @return size_t
   */
-  size_t children_size() const {return children.size();};
+  size_t children_size() const {return children.size();}
 
   /**
       Getter for front of children
 
       @return Gate*
   */
-  Gate * children_front() const {return children.front();};
+  Gate * children_front() const {return children.front();}
 
   /**
       Getter for back of children
 
       @return Gate*
   */
-  Gate * children_back() const {return children.back();};
+  Gate * children_back() const {return children.back();}
 
   /**
       Setter for front of children
 
       @param n Gate*
   */
-  void set_children_front(Gate * n) {children.front() = n;};
+  void set_children_front(Gate * n) {children.front() = n;}
 
   /**
       Setter for back of children
 
       @param n Gate*
   */
-  void set_children_back (Gate * n) {children.back() = n;};
+  void set_children_back(Gate * n) {children.back() = n;}
 
   /**
       Appends gate n to the children
 
       @param n Gate*
   */
-  void children_push_back(Gate * n) {children.push_back(n);};
+  void children_push_back(Gate * n) {children.push_back(n);}
 
   /**
       Removes gate n from the children
 
       @param n Gate*
   */
-  void children_remove (Gate * n) {children.remove(n);};
+  void children_remove(Gate * n) {children.remove(n);}
 
 
   /**
@@ -568,14 +569,13 @@ public:
       @return True whether n is child of this gate
   */
   bool is_child(const Gate *n) const;
-
 };
 
 /*------------------------------------------------------------------------*/
-/// Gate ** where all gates are stored
+// / Gate ** where all gates are stored
 extern Gate ** gates;
 
-/// Counts the number of gates
+// / Counts the number of gates
 extern unsigned num_gates;
 /*------------------------------------------------------------------------*/
 
@@ -586,7 +586,7 @@ extern unsigned num_gates;
 
     @returns Gate*
 */
-Gate * gate (unsigned lit);
+Gate * gate(unsigned lit);
 
 /**
     Allocate the Gate** gates and filling it
@@ -611,7 +611,7 @@ Gate * derive_ha_and_gate(const Gate * n);
 /**
     Identifies XOR gates in an AIG
 */
-void set_xor ();
+void set_xor();
 
 /**
     Identifies whether the output gates of slice N until NN-2 are
@@ -628,7 +628,7 @@ bool upper_half_xor_output();
 
     @return Gate*
 */
-Gate * xor_left_child (const Gate * n);
+Gate * xor_left_child(const Gate * n);
 
 /**
     Returns the 'right' child of an XOR
@@ -637,7 +637,7 @@ Gate * xor_left_child (const Gate * n);
 
     @return Gate*
 */
-Gate * xor_right_child (const Gate * n);
+Gate * xor_right_child(const Gate * n);
 
 /**
     Mark all gates in the xor_chain in the last slice
@@ -647,10 +647,17 @@ void mark_xor_chain_in_last_slice();
 /**
     For all gates set the parents and children
 
-    @param set_children indicate whether children will be set (0 in -substitute)
+    @param set_children indicate whether children will be set(0 in -substitute)
 */
-void set_parents_and_children (bool set_children);
+void set_parents_and_children(bool set_children);
 
+/**
+    Check whether no parent is assigned to a smaller slice
+
+    @param n  Gate *
+    @param i  slice
+*/
+bool parents_are_in_equal_or_larger_slice(const Gate * n, int i);
 
 /**
     Defines the polynomial '1-v'
@@ -659,7 +666,7 @@ void set_parents_and_children (bool set_children);
 
     @returns: Polynomial*
 */
-Polynomial * negative_poly (const Var * v);
+Polynomial * negative_poly(const Var * v);
 
 /**
     Defines the polynomial 'v'
@@ -668,16 +675,31 @@ Polynomial * negative_poly (const Var * v);
 
     @return Polynomial*
 */
-Polynomial * positive_poly (const Var * v);
+Polynomial * positive_poly(const Var * v);
+
+/**
+    Generates the gate constraints for gates[i]
+
+    @param i unsigned with NN <= i < M + NN - 1
+*/
+Polynomial * gen_gate_constraint(unsigned i);
+
+/**
+    Initializes the gate constraints in gates[i]
+
+    @param i unsigned with NN <= i < M + NN - 1
+*/
+void init_gate_constraint(unsigned i);
+
 
 /**
     Initializes all gate constraints in the gates[]
 */
-void init_gate_constraints ();
+void init_gate_constraints();
 
 /**
     Deletes Gate** gates by calling destructur of Gate
 */
 void delete_gates();
 
-#endif
+#endif  // AMULET2_SRC_GATE_H_

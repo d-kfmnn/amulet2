@@ -2,12 +2,12 @@
 /*! \file parser.h
     \brief contains functions necessary to parse the AIG
 
-  Part of AMulet2.0 : AIG Multiplier Verification Tool.
-  Copyright (C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
-#ifndef _parser_H
-#define _parser_H
+#ifndef AMULET2_SRC_PARSER_H_
+#define AMULET2_SRC_PARSER_H_
 /*------------------------------------------------------------------------*/
 #include "aig.h"
 /*------------------------------------------------------------------------*/
@@ -21,7 +21,7 @@
 
     @return True if 'model' contains such an aiger node
 */
-bool match_and (unsigned lhs, unsigned rhs0, unsigned rhs1);
+bool match_and(unsigned lhs, unsigned rhs0, unsigned rhs1);
 
 /**
     Identifies whether the input vectors are separated or interleaved.
@@ -42,4 +42,4 @@ void init_aiger_with_checks();
 void parse_aig(const char * input_name);
 
 
-#endif
+#endif  // AMULET2_SRC_PARSER_H_

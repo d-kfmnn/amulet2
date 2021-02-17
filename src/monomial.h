@@ -3,12 +3,12 @@
     \brief contains the class Monomial and further functions to
     manipulate monomials
 
-  Part of AMulet2.0 : AIG Multiplier Verification Tool.
-  Copyright (C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
-#ifndef _monomial_H
-#define _monomial_H
+#ifndef AMULET2_SRC_MONOMIAL_H_
+#define AMULET2_SRC_MONOMIAL_H_
 /*------------------------------------------------------------------------*/
 #include <gmp.h>
 
@@ -21,15 +21,14 @@
 */
 
 class Monomial {
-
-  /// Term*
+  // / Term*
   Term * term;
 
-  /// reference counter
+  // / reference counter
   unsigned ref;
 
-public:
-  /// Coefficient
+ public:
+  // / Coefficient
   mpz_t coeff;
 
   /** Constructor
@@ -43,25 +42,25 @@ public:
 
       @return Term*
   */
-  Term * get_term()       const {return term;};
+  Term * get_term()       const {return term;}
 
   /** Getter for member term, calls copy routine of Term
 
       @return a copy of Term* term
   */
-  Term * get_term_copy()  const {return term->copy();};
+  Term * get_term_copy()  const {return term->copy();}
 
   /** Returns the size fo the term
 
       @return unsigned, the size of the term
   */
-  unsigned get_term_size() const {return term->size();};
+  unsigned get_term_size() const {return term->size();}
 
   /** Decreases the reference counter
 
       @return the decreases reference counter
   */
-  unsigned dec_ref()             {return --ref;};
+  unsigned dec_ref()             {return --ref;}
 
   /** Getter for the reference counter
 
@@ -86,9 +85,6 @@ public:
 
   /** Destructor */
   ~Monomial();
-
-
-
 };
 /*------------------------------------------------------------------------*/
 
@@ -100,7 +96,7 @@ public:
 
   @return Product of m1*m2
 */
-Monomial * multiply_monomial (const Monomial * m1, const Monomial *m2);
+Monomial * multiply_monomial(const Monomial * m1, const Monomial *m2);
 
 /**
   Wrapper for deconstructor, reduces the references of m until 0.
@@ -110,7 +106,4 @@ Monomial * multiply_monomial (const Monomial * m1, const Monomial *m2);
 */
 void deallocate_monomial(Monomial * m);
 
-
-
-
-#endif
+#endif  // AMULET2_SRC_MONOMIAL_H_

@@ -2,19 +2,20 @@
 /*! \file slicing.h
     \brief contains functions slice and order the gates
 
-  Part of AMulet2.0 : AIG Multiplier Verification Tool.
-  Copyright (C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
-#ifndef _slicing_H
-#define _slicing_H
+#ifndef AMULET2_SRC_SLICING_H_
+#define AMULET2_SRC_SLICING_H_
 /*------------------------------------------------------------------------*/
 #include <vector>
+#include <list>
 
 #include "gate.h"
 /*------------------------------------------------------------------------*/
-/// vector-list Gate* matrix to store slices
-extern std::vector<std::list<Gate*>> slices ;
+// / vector-list Gate* matrix to store slices
+extern std::vector<std::list<Gate*>> slices;
 /*------------------------------------------------------------------------*/
 
 /**
@@ -66,7 +67,7 @@ void slice_jut_gates();
 
 /**
     Fix some xors, that are assigned to different slices
-    (needed for 7,3 counter trees )
+   (needed for 7,3 counter trees )
 */
 int fix_xors();
 
@@ -97,7 +98,7 @@ void input_cone(Gate * n, int num);
 void find_carries();
 
 /**
-    Identifies whether polynomials use a booth pattern (as in the aoki benchmarks)
+    Identifies whether polynomials use a booth pattern(as in the aoki benchmarks)
 
     @return True if booth pattern are found
 */
@@ -123,4 +124,4 @@ void fill_slices();
 */
 void slicing_non_xor();
 
-#endif
+#endif  // AMULET2_SRC_SLICING_H_

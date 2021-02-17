@@ -2,17 +2,17 @@
 /*! \file polynomial_solver.h
     \brief contains the polynomial solving routine
 
-  Part of AMulet2.0 : AIG Multiplier Verification Tool.
-  Copyright (C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
-#ifndef _polynomial_solver_H
-#define _polynomial_solver_H
+#ifndef AMULET2_SRC_POLYNOMIAL_SOLVER_H_
+#define AMULET2_SRC_POLYNOMIAL_SOLVER_H_
 /*------------------------------------------------------------------------*/
 #include "elimination.h"
 /*------------------------------------------------------------------------*/
-/// If final remainder is not equal to zero a counter example is generated and
-/// printed to file <input_name>.wit, default is true, can be turned of
+// / If final remainder is not equal to zero a counter example is generated and
+// / printed to file <input_name>.wit, default is true, can be turned of
 //  using command line input
 extern bool gen_witness;
 /*------------------------------------------------------------------------*/
@@ -41,4 +41,4 @@ void verify(const char * inp_f = 0,
             bool certify = 0);
 
 
-#endif
+#endif  // AMULET2_SRC_POLYNOMIAL_SOLVER_H_

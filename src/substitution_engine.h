@@ -2,12 +2,12 @@
 /*! \file substitution_engine.h
     \brief contains the substitution engine
 
-  Part of AMulet2.0 : AIG Multiplier Verification Tool.
-  Copyright (C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
-#ifndef _substitution_engine_H
-#define _substitution_engine_H
+#ifndef AMULET2_SRC_SUBSTITUTION_ENGINE_H_
+#define AMULET2_SRC_SUBSTITUTION_ENGINE_H_
 /*------------------------------------------------------------------------*/
 #include "substitution.h"
 /*------------------------------------------------------------------------*/
@@ -29,4 +29,4 @@ void init_gate_substitution();
 void substitution(const char * out_f1, const char * out_f2);
 
 
-#endif
+#endif  // AMULET2_SRC_SUBSTITUTION_ENGINE_H_
