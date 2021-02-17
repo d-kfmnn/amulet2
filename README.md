@@ -1,9 +1,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-AMulet 2.0 - AIG Multiplier Examination Tool
+AMulet 2.1 - AIG Multiplier Examination Tool
 ================================================================================
 
-Our tool AMulet 2.0 is able to verify and certify unsigned and signed 
+Our tool AMulet 2.1 is able to verify and certify unsigned and signed 
 integer multipliers given as AIGs.
 
 For further information we refer to the paper:
@@ -16,7 +16,7 @@ To appear in Proc. 14th Intl. Conference on Tools and Algorithms for the Constru
 
 Dependencies: `libgmp` (https://gmplib.org/)
 
-Use `./configure.sh && make` to configure and build `AMulet 2.0`.
+Use `./configure.sh && make` to configure and build `AMulet 2.1`.
 
 
 usage : `amulet <mode> <input.aig> <output files> [<option> ...]`
@@ -57,5 +57,14 @@ Depending on the `<mode>` the `<output files>` and `<options>` have to be set ac
          -signed               option for signed integer multipliers 
          -no-counter-examples  do not generate and write counter examples
 
-         -pac                  produces proofs in condensed PAC format 
-         -nss                  produces proofs in Nullstellensatz format (default)
+         -p1          expanded proof (no linear combinations, only multiplication and addition)
+         -p2          middle condensed proof(sequence of linear combinations, default)
+         -p3          condensed proof(one single linear combination)
+
+--------------------------------------------------
+AMulet 2.1: 
+  - Instead of PAC and NSS we now support LPAC on different abstraction levels
+    See https://github.com/d-kfmnn/pacheck2 for a corresponding proof checker.
+           
+  - Optimized polynomial generation 
+
