@@ -62,7 +62,7 @@ Depending on the `<mode>` the `<output files>` and `<options>` have to be set ac
          -p3          condensed proof(one single linear combination)
 
 --------------------------------------------------
-AMulet 2.1: 
+17.02.2021 AMulet 2.1:  
   - Instead of PAC and NSS we now support LPAC on different abstraction levels
     See https://github.com/d-kfmnn/pacheck2 for a corresponding proof checker.
            
