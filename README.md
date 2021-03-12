@@ -6,14 +6,16 @@ AMulet 2.1 - AIG Multiplier Examination Tool
 Our tool AMulet 2.1 is able to verify and certify unsigned and signed 
 integer multipliers given as AIGs.
 
-For further information we refer to the paper:
+For further information we refer to the paper
 
 Daniela Kaufmann, Armin Biere. 
  [`AMulet 2.0 for Verifying Multiplier Circuits.`](https://danielakaufmann.at/kaufmannbiere-tacas21/)
 To appear in Proc. 14th Intl. Conference on Tools and Algorithms for the Construction and Analysis of Systems (TACAS), 8 pages, 2021.
 
-
-
+and the corresponding website http://fmv.jku.at/amulet2  
+  
+----------------------------------------------------------------  
+  
 Dependencies: `libgmp` (https://gmplib.org/)
 
 Use `./configure.sh && make` to configure and build `AMulet 2.1`.
@@ -41,7 +43,7 @@ Depending on the `<mode>` the `<output files>` and `<options>` have to be set ac
       <option> = the following options are available 
          -h | --help           print this command line summary 
          -v<1,2,3,4>           different levels of verbosity (default -v1) 
-         -signed               option for signed integer multipliers 
+         -signed               option for signed integer multipliers    
          -no-counter-examples  do not generate and write counter examples
      
      
