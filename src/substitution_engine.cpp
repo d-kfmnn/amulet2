@@ -40,7 +40,7 @@ void substitution(const char * out_f1, const char * out_f2) {
 
     generate_rewritten_aig();
 
-    if (!aiger_write_to_file(rewritten, aiger_ascii_mode, f2))
+    if (!aiger_write_to_file(rewritten, aiger_binary_mode, f2))
       die("failed to write rewritten aig to '%s'", out_f2);
     else
       msg("writing rewritten aig to '%s'", out_f2);
