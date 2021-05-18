@@ -38,7 +38,12 @@ bool all_single_output() {
 /*------------------------------------------------------------------------*/
 
 bool all_outputs_are_xor() {
+  unsigned lit = slit(NN-1);
+  if(!lit) return 0;
+
   for (unsigned i = 1; i < NN-1; i++) {
+    unsigned lit = slit(i);
+    if(!lit) return 0;
     Gate * n = gate(slit(i));
     if (!n->get_xor_gate()) return 0;
   }
@@ -48,7 +53,11 @@ bool all_outputs_are_xor() {
 /*------------------------------------------------------------------------*/
 
 bool slice_two_needs_carry_in_slice_zero() {
+  unsigned lit2 = slit(2);
+  if(!lit2) return 0;
   Gate * out2 = gate(slit(2));
+  unsigned lit = slit(0);
+  if(!lit) return 0;
   Gate * out0 = gate(slit(0));
   if (out2->parents_size() > 3 && out0->parents_size() == 1) return 0;
   return 1;
@@ -57,6 +66,8 @@ bool slice_two_needs_carry_in_slice_zero() {
 /*------------------------------------------------------------------------*/
 
 bool cin_in_slice_0() {
+  unsigned lit = slit(0);
+  if(!lit) return 0;
   Gate * n = gate(slit(0));
   if (n->parents_size() > 1) return 1;
   return 0;

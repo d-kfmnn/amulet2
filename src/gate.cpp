@@ -137,6 +137,7 @@ void allocate_gates(bool assert) {
 void mark_aig_outputs() {
   for (unsigned i = 0; i < NN; i++) {
     unsigned lit = slit(i);
+    if(!lit) continue;
     Gate * n = gate(lit);
     n->mark_aig_output();
   }
@@ -201,8 +202,10 @@ void set_xor() {
 /*------------------------------------------------------------------------*/
 
 bool upper_half_xor_output() {
-  for (unsigned i = num_gates-2; i >= M+NN/2-1; i--) {
-    Gate * n = gates[i]->children_front();
+  for (unsigned i = num_gates-2; i >= M-1; i--) {
+    Gate * n = gates[i];
+    if(!n->children_size()) return 0;
+    n = n->children_front();
     if (!n->get_xor_gate()) return 0;
   }
   return 1;
@@ -317,7 +320,9 @@ void set_parents_and_children(bool set_children) {
   for (unsigned i = 0; i < NN; i++) {
     Gate * n = gates[i+M-1];
     assert(n->get_output());
-    Gate * model_output_gate = gate(slit(i));
+    unsigned lit = slit(i);
+    if(!lit) continue;
+    Gate * model_output_gate = gate(lit);
     if (set_children) n->children_push_back(model_output_gate);
     model_output_gate->parents_push_back(n);
   }
@@ -417,21 +422,28 @@ Polynomial * gen_gate_constraint(unsigned i) {
     assert(n->get_output());
 
     Gate * model_output_gate = n->children_front();
-    if (!model_output_gate) die("init gate constraint not working");
-    const Var * v = n->get_var();
-    Term * t1 = new_term(v, 0);
-    Monomial * m1 = new Monomial(minus_one, t1);
+    if (!model_output_gate) {
+      const Var * v = n->get_var();
+      Term * t1 = new_term(v, 0);
+      Monomial * m1 = new Monomial(minus_one, t1);
+      p->mon_push_back(m1);
+    } else {
+      const Var * v = n->get_var();
+      Term * t1 = new_term(v, 0);
+      Monomial * m1 = new Monomial(minus_one, t1);
 
-    Polynomial * p_tl;
-    if (aiger_sign(slit(i-M+1)))
-      p_tl = negative_poly(model_output_gate->get_var());
-    else
-      p_tl = positive_poly(model_output_gate->get_var());
-    p->mon_push_back(m1);
+      Polynomial * p_tl;
+      if (aiger_sign(slit(i-M+1)))
+        p_tl = negative_poly(model_output_gate->get_var());
+      else
+        p_tl = positive_poly(model_output_gate->get_var());
+      p->mon_push_back(m1);
 
-    link_poly(p, p_tl);
+      link_poly(p, p_tl);
 
-    delete(p_tl);
+      delete(p_tl);
+    }
+
   }
   p->set_idx(2+i-NN);
   return p;
