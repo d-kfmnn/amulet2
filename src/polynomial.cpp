@@ -286,6 +286,7 @@ Polynomial * add_poly(const Polynomial * p1, const Polynomial * p2) {
 /*------------------------------------------------------------------------*/
 
 Polynomial * multiply_poly(const Polynomial * p1, const Polynomial * p2) {
+  if(!p1 || !p2) return 0;
   mpz_t coeff;
   mpz_init(coeff);
   Term * t;
@@ -366,6 +367,7 @@ Polynomial * divide_by_term(const Polynomial * p1, const Term * t) {
 /*------------------------------------------------------------------------*/
 
 void link_poly(Polynomial *p1, const Polynomial *p2) {
+  if(!p2) return;
   for (std::deque<Monomial*>::const_iterator it = p2->mon_begin();
       it != p2->mon_end(); ++it) {
         Monomial * m = *it;

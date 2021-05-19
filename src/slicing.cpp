@@ -439,7 +439,7 @@ void merge_all() {
     for (unsigned i = M-2; i > NN; i--) {
       Gate * n = gates[i];
 
-      if (n->get_slice() < 0) continue;  // elim
+      if (n->get_slice() < 1) continue;  // elim
       if (n->get_elim()) continue;
       if (is_model_input(n->get_var_num())) continue;
 
@@ -510,6 +510,8 @@ void promote_all() {
       Gate * v0 = gate(rhs0);
       Gate * v1 = gate(rhs1);
 
+      if(!v0 || !v1) continue;
+
       if (n->get_xor_gate() != 2 &&
         (!v0->get_carry_gate() || !v1->get_carry_gate()) &&
         (!v0->get_carry_gate() || !v1->get_input()) &&
@@ -565,7 +567,7 @@ void fill_slices() {
 void slicing_non_xor() {
   for (unsigned i = 0; i < NN; i++){
     unsigned lit = slit(i);
-    if(!lit) continue;
+    if(lit < 2) continue;
     input_cone(gate(lit), i);
   }
 

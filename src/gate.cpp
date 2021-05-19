@@ -80,6 +80,7 @@ unsigned num_gates;
 
 Gate * gate(unsigned lit) {
   assert(lit < 2*M);
+  if(lit < 2) return 0;
   return gates[lit/2-1];
 }
 
@@ -137,7 +138,7 @@ void allocate_gates(bool assert) {
 void mark_aig_outputs() {
   for (unsigned i = 0; i < NN; i++) {
     unsigned lit = slit(i);
-    if(!lit) continue;
+    if(lit < 2) continue;
     Gate * n = gate(lit);
     n->mark_aig_output();
   }
@@ -302,18 +303,27 @@ void set_parents_and_children(bool set_children) {
       n->children_push_back(r_gate);
     }
 
-    n->set_level(l_gate->get_level() > r_gate->get_level() ?
+    if(l_gate && r_gate) {
+      n->set_level(l_gate->get_level() > r_gate->get_level() ?
                  l_gate->get_level()+1 : r_gate->get_level()+1);
 
-    l_gate->parents_push_back(n);
-    r_gate->parents_push_back(n);
+      if (l_gate->get_input() && r_gate->get_input()
+            && !aiger_sign(l) && !aiger_sign(r)) {
+        n->mark_pp();
+        pp++;
+        if (verbose >= 4) msg("partial product %s", n->get_var_name());
+      }
 
-    if (l_gate->get_input() && r_gate->get_input()
-          && !aiger_sign(l) && !aiger_sign(r)) {
-      n->mark_pp();
-      pp++;
-      if (verbose >= 4) msg("partial product %s", n->get_var_name());
+    } else if (l_gate) {
+      n->set_level(l_gate->get_level()+1);
+    } else if (r_gate){
+      n->set_level(r_gate->get_level()+1);
     }
+
+    if(l_gate) l_gate->parents_push_back(n);
+    if(r_gate) r_gate->parents_push_back(n);
+
+
   }
 
   // set children for extra outputs
@@ -321,7 +331,7 @@ void set_parents_and_children(bool set_children) {
     Gate * n = gates[i+M-1];
     assert(n->get_output());
     unsigned lit = slit(i);
-    if(!lit) continue;
+    if(lit < 2) continue;
     Gate * model_output_gate = gate(lit);
     if (set_children) n->children_push_back(model_output_gate);
     model_output_gate->parents_push_back(n);
@@ -389,27 +399,45 @@ Polynomial * gen_gate_constraint(unsigned i) {
     Gate * l_gate = gate(l), *r_gate = gate(r);
 
     const Var * v = n->get_var();
-
     Term * t1 = new_term(v, 0);
     Monomial * m1 = new Monomial(minus_one, t1);
+    p->mon_push_back(m1);
 
-    const Var * v1 = l_gate->get_var();
-    const Var * v2 = r_gate->get_var();
     unsigned sign1 = aiger_sign(and1->rhs0);
-    unsigned sign2 = aiger_sign(and1->rhs1);
-
     Polynomial * p1;
+
+    if(l_gate) {
+      const Var * v1 = l_gate->get_var();
+      if (sign1) p1 = negative_poly(v1);
+      else
+       p1 = positive_poly(v1);
+    } else {
+      if(sign1) {
+        p1 = new Polynomial();
+        p1->mon_push_back(new Monomial(one,0));
+      }
+      else p1 = 0;
+    }
+
+
+    unsigned sign2 = aiger_sign(and1->rhs1);
     Polynomial * p2;
 
-    if (sign1) p1 = negative_poly(v1);
-    else
-      p1 = positive_poly(v1);
+    if(r_gate){
+      const Var * v2 = r_gate->get_var();
+      if (sign2) p2 = negative_poly(v2);
+      else
+        p2 = positive_poly(v2);
 
-    if (sign2) p2 = negative_poly(v2);
-    else
-      p2 = positive_poly(v2);
+    } else {
+      if(sign2){
+        p2 = new Polynomial();
+        p2->mon_push_back(new Monomial(one,0));
+      }
+      else p2 = 0;
+    }
+
     Polynomial * p_tl = multiply_poly(p1, p2);
-    p->mon_push_back(m1);
 
     link_poly(p, p_tl);
 
@@ -423,10 +451,14 @@ Polynomial * gen_gate_constraint(unsigned i) {
 
     Gate * model_output_gate = n->children_front();
     if (!model_output_gate) {
+      unsigned lit = slit(i-M+1);
       const Var * v = n->get_var();
       Term * t1 = new_term(v, 0);
       Monomial * m1 = new Monomial(minus_one, t1);
       p->mon_push_back(m1);
+      if(lit == 1){
+        p->mon_push_back(new Monomial(one, 0));
+      }
     } else {
       const Var * v = n->get_var();
       Term * t1 = new_term(v, 0);
