@@ -310,7 +310,6 @@ void slicing_xor() {
   for (std::list<Gate*>::const_iterator it=sl.begin(); it != sl.end(); ++it) {
     Gate * n = *it;
     if (n->get_elim()) continue;
-    if (n->get_gate_constraint()) n->print_gate_constraint(stdout);
     }
   }
   if (fix_xors()) fix_jut_gates();

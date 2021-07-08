@@ -76,7 +76,7 @@ static std::vector<Polynomial*> add_and_merge_factors( FILE * file,
     return container;
   }
 
-  Polynomial * p = add_p; 
+  Polynomial * p = add_p;
   Polynomial * q = container.back();
 
   if (p->get_level() != q->get_level()) {
@@ -233,10 +233,12 @@ void remove_internal_xor_gates(FILE * file) {
     if (r_gate->get_xor_gate() != 2) continue;
     assert(l_gate->children_size() == 2);
     assert(r_gate->children_size() == 2);
+    if(l_gate->parents_size() != 1 && r_gate->parents_size() != 1) continue;
     Gate * ll_gate = l_gate->children_front();
     Gate * lr_gate = l_gate->children_back();
 
     // set xor children to ll and lr by overwriting l and r
+
     n->set_children_front(ll_gate);
     n->set_children_back(lr_gate);
 
@@ -547,16 +549,14 @@ Polynomial * mod_poly(const Polynomial *p1, bool print_rule, FILE * file) {
     for (std::deque<Monomial*>::const_iterator it = p1->mon_begin();
         it != p1->mon_end(); ++it) {
       Monomial * m = *it;
-      if (pac_print || proof == 3) {
-        mpz_tdiv_q_2exp(quot, m->coeff, exp);
-        if (mpz_sgn(quot) != 0) {
-          mpz_neg(quot, quot);
-          Monomial * tmp;
-          if (m->get_term()) tmp =  new Monomial(quot, m->get_term_copy());
-          else
-            tmp =  new Monomial(quot, 0);
-          push_mstack_end(tmp);
-        }
+
+      mpz_tdiv_q_2exp(quot, m->coeff, exp);
+      if (mpz_sgn(quot) != 0) {
+        mpz_neg(quot, quot);
+        Monomial * tmp;
+        if (m->get_term()) tmp =  new Monomial(quot, m->get_term_copy());
+        else tmp =  new Monomial(quot, 0);
+        push_mstack_end(tmp);
       }
     }
     mpz_clear(quot);
@@ -565,12 +565,14 @@ Polynomial * mod_poly(const Polynomial *p1, bool print_rule, FILE * file) {
   if (pac_print && !mstack_is_empty()) {
     assert(file);
     Polynomial * p = build_poly();
+
     Polynomial * mod = multiply_poly_with_constant(p, mod_coeff);
     print_pac_mod_rule(file,  p, mod);
     print_pac_add_rule(file,  p1, mod, out);
 
     delete(p);
     delete(mod);
+
   } else if (proof == 3 && !mstack_is_empty()) {
     Polynomial * p = build_poly();
     add_fac_mod(p);
@@ -640,18 +642,20 @@ void correct_pp_signed(const Polynomial * p, FILE * file) {
   mpz_clear(half_mod);
   mpz_clear(half_mod_neg);
 
-  Polynomial * factor = build_poly();
-  if (!factor) return;
+  if (!mstack_is_empty()) {
+    Polynomial * factor = build_poly();
+    if (!factor) return;
 
-  Polynomial * mod = multiply_poly_with_constant(factor, mod_coeff);
-  print_pac_mod_rule(file,  factor, mod);
+    Polynomial * mod = multiply_poly_with_constant(factor, mod_coeff);
+    print_pac_mod_rule(file,  factor, mod);
 
-  Polynomial * add = add_poly(mod, p);
-  print_pac_add_rule(file,  mod, p, add);
+    Polynomial * add = add_poly(mod, p);
+    print_pac_add_rule(file,  mod, p, add);
 
-  delete(mod);
-  delete(factor);
-  delete(add);
+    delete(mod);
+    delete(factor);
+    delete(add);
+  }
 }
 
 /*------------------------------------------------------------------------*/

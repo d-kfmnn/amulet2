@@ -61,6 +61,7 @@ void verify(const char * inp_f, const char * out_f1,
     decomposing(f2);
 
   } else {
+
     msg("slicing based on xor");
     remove_single_occs_gates(f2);
 

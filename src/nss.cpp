@@ -60,7 +60,7 @@ void print_cofactors_poly_nss(FILE * file) {
   for (unsigned i = num_gates-1; i >= NN ; i--) {
     Polynomial * p = gates[i]->get_cofactor();
 
-    if (p) {
+    if (p && !p->is_constant_zero_poly()) {
       if (!first) fputs(" + ", file);
       fprintf(file, "%i *(", 2+i-NN);
       p->print(file, 0);
@@ -69,7 +69,7 @@ void print_cofactors_poly_nss(FILE * file) {
     }
   }
 
-  if (mod_factor) {
+  if (mod_factor && !mod_factor->is_constant_zero_poly()) {
     fprintf(file, " + 1 *(");
     mod_factor->print(file, 0);
     fputs(")\n", file);
