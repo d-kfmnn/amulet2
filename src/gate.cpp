@@ -203,12 +203,15 @@ void set_xor() {
 /*------------------------------------------------------------------------*/
 
 bool upper_half_xor_output() {
-  for (unsigned i = num_gates-2; i >= M-1; i--) {
+  for (unsigned i = num_gates-2; i > M-1; i--) {
     Gate * n = gates[i];
     if(!n->children_size()) return 0;
     n = n->children_front();
     if (!n->get_xor_gate()) return 0;
   }
+
+  if(!gates[M-1]->children_size()) return 0;
+
   return 1;
 }
 
