@@ -147,7 +147,7 @@ void eliminate_by_one_gate(Gate * n1, Gate *n2, FILE * file) {
 
     print_pac_add_rule(file, p1, mult, rem);
     print_pac_del_rule(file, p1);
-    print_pac_del_rule(file, mult);
+    if (!negfactor->is_constant_one_poly()) print_pac_del_rule(file, mult);
   } else if (proof == 2) {
     assert(file);
     if (!negfactor->is_constant_one_poly())
