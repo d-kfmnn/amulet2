@@ -10,7 +10,7 @@ For further information we refer to the paper
 
 Daniela Kaufmann, Armin Biere. 
  [`AMulet 2.0 for Verifying Multiplier Circuits.`](https://danielakaufmann.at/kaufmannbiere-tacas21/)
-To appear in Proc. 14th Intl. Conference on Tools and Algorithms for the Construction and Analysis of Systems (TACAS), 8 pages, 2021.
+In Proc. 14th Intl. Conference on Tools and Algorithms for the Construction and Analysis of Systems (TACAS), 8 pages, 2021.
 
 and the corresponding website http://fmv.jku.at/amulet2  
   
@@ -64,6 +64,9 @@ Depending on the `<mode>` the `<output files>` and `<options>` have to be set ac
          -p3          condensed proof(one single linear combination)
 
 --------------------------------------------------
+10.09.2021 AMulet 2.1:
+  - Reducing memory usage by changing data structure of polynomials
+
 17.02.2021 AMulet 2.1:  
   - Instead of PAC and NSS we now support LPAC on different abstraction levels
     See https://github.com/d-kfmnn/pacheck2 for a corresponding proof checker.
