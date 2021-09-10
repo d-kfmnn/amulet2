@@ -3,7 +3,7 @@
     \brief contains arithmetic operations for polynomials
 
   Part of AMulet2.1 : AIG Multiplier Verification Tool.
-  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
 #ifndef AMULET2_SRC_POLYNOMIAL_H_
@@ -24,18 +24,15 @@ class Polynomial {
 
   int level = 1;  // /< level of polynomials needed for certificates
 
-  std::deque<Monomial*> mon;  // /< sorted deque of monomials
+  Monomial ** mon;  // /< sorted deque of monomials
+
+  size_t num_mon = 0;
 
  public:
   /** Constructor */
   Polynomial();
 
-  /** Constructor
-
-     @param _idx default for index is zero
-
-  */
-  explicit Polynomial(int _idx);
+  Polynomial (Monomial ** m, size_t len);
 
   /** Getter for member idx
 
@@ -63,32 +60,18 @@ class Polynomial {
   */
   void set_level(int level_) {level = level_;}
 
-  /**
-      Getter for begin of mon
+  Monomial * get_mon(size_t i) const {
+     if(i < num_mon) return mon[i];
+     else return 0;
+   }
 
-      @return std::deque<Monomial*>::const_iterator
-  */
-  std::deque<Monomial*>::const_iterator mon_begin() const {return mon.begin();}
-
-  /**
-      Getter for end of mon
-
-      @return std::deque<Monomial*>::const_iterator
-  */
-  std::deque<Monomial*>::const_iterator mon_end() const {return mon.end();}
-
-  /**
-      Appends monomial m to mon
-
-      @param m Monomial*
-  */
-  void mon_push_back(Monomial * m) {mon.push_back(m);}
+   size_t size() const { return num_mon;}
 
   /** Returns the leading term
 
       @return Term*
   */
-  Term * get_lt() const {return mon.front()->get_term();}
+  Term * get_lt() const {return mon[0]->get_term();}
 
   /**
       Copy routine
@@ -221,15 +204,6 @@ Polynomial * multiply_poly_with_constant(const Polynomial *p1, mpz_t c);
 */
 Polynomial * divide_by_term(const Polynomial * p1, const Term * t);
 
-/**
-    Appends p2 to p1
-
-    @param p1 Polynomial*
-    @param p2 Polynomial*
-
-    @return Polynomial*, [p1, p2]
-*/
-void link_poly(Polynomial *p1, const Polynomial *p2);
 
 /*---------------------------------------------------------------------------*/
 // / gmp for 1

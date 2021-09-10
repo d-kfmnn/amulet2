@@ -4,7 +4,7 @@
     organize the gate structure, such as initializing the gate constraints
 
   Part of AMulet2.1 : AIG Multiplier Verification Tool.
-  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
 #include <string>
@@ -30,7 +30,7 @@ bool Gate::orig() const {
 /*------------------------------------------------------------------------*/
 
 Gate::~Gate() {
-  delete(v);
+  if(v) delete(v);
   delete(co_factor);
   if (gate_constraint) delete(gate_constraint);
   for (std::map<Gate*, Polynomial*>::const_iterator it=ancestors.begin();
@@ -363,16 +363,15 @@ bool parents_are_in_equal_or_larger_slice(const Gate * n, int i) {
 /*------------------------------------------------------------------------*/
 
 Polynomial * negative_poly(const Var * v) {
-  Polynomial * p = new Polynomial();
 
   Term * t1 = new_term(v, 0);
   Monomial * m1 = new Monomial(minus_one, t1);
-  p->mon_push_back(m1);
+  push_mstack_end(m1);
 
   Monomial * m2 = new Monomial(one, 0);
-  p->mon_push_back(m2);
+  push_mstack_end(m2);
 
-  return p;
+  return build_poly();
 }
 
 /*------------------------------------------------------------------------*/
@@ -380,16 +379,30 @@ Polynomial * negative_poly(const Var * v) {
 Polynomial * positive_poly(const Var * v) {
   Term * t = new_term(v, 0);
   Monomial * m = new Monomial(one, t);
-  Polynomial * p = new Polynomial();
-  p->mon_push_back(m);
+  push_mstack_end(m);
 
-  return p;
+  return build_poly();
 }
 
 /*------------------------------------------------------------------------*/
+static Polynomial * get_node_constraint(Gate * g, unsigned sign){
+  if(g) {
+    const Var * v1 = g->get_var();
+    if (sign) return negative_poly(v1);
+    else return positive_poly(v1);
+  } else {
+    if(sign) {
+      push_mstack_end(new Monomial(one, 0));
+      return build_poly();
+    } else return 0;
+  }
+}
+
+/*------------------------------------------------------------------------*/
+
 Polynomial * gen_gate_constraint(unsigned i) {
   assert(i >= NN && i < M + NN - 1);
-  Polynomial * p = new Polynomial();
+  Polynomial * p = 0;
   // gate constraint
   if (i < M-1) {
     Gate * n = gates[i];
@@ -404,46 +417,16 @@ Polynomial * gen_gate_constraint(unsigned i) {
     const Var * v = n->get_var();
     Term * t1 = new_term(v, 0);
     Monomial * m1 = new Monomial(minus_one, t1);
-    p->mon_push_back(m1);
+    push_mstack_end(m1);
+    Polynomial * p_h = build_poly();
 
-    unsigned sign1 = aiger_sign(and1->rhs0);
-    Polynomial * p1;
-
-    if(l_gate) {
-      const Var * v1 = l_gate->get_var();
-      if (sign1) p1 = negative_poly(v1);
-      else
-       p1 = positive_poly(v1);
-    } else {
-      if(sign1) {
-        p1 = new Polynomial();
-        p1->mon_push_back(new Monomial(one,0));
-      }
-      else p1 = 0;
-    }
-
-
-    unsigned sign2 = aiger_sign(and1->rhs1);
-    Polynomial * p2;
-
-    if(r_gate){
-      const Var * v2 = r_gate->get_var();
-      if (sign2) p2 = negative_poly(v2);
-      else
-        p2 = positive_poly(v2);
-
-    } else {
-      if(sign2){
-        p2 = new Polynomial();
-        p2->mon_push_back(new Monomial(one,0));
-      }
-      else p2 = 0;
-    }
-
+    Polynomial * p1 = get_node_constraint(l_gate, aiger_sign(and1->rhs0));
+    Polynomial * p2 = get_node_constraint(r_gate, aiger_sign(and1->rhs1));
     Polynomial * p_tl = multiply_poly(p1, p2);
 
-    link_poly(p, p_tl);
+    p = add_poly(p_h, p_tl);
 
+    delete(p_h);
     delete(p_tl);
 
     delete(p1);
@@ -458,10 +441,12 @@ Polynomial * gen_gate_constraint(unsigned i) {
       const Var * v = n->get_var();
       Term * t1 = new_term(v, 0);
       Monomial * m1 = new Monomial(minus_one, t1);
-      p->mon_push_back(m1);
+      push_mstack_end(m1);
       if(lit == 1){
-        p->mon_push_back(new Monomial(one, 0));
+        push_mstack_end(new Monomial(one, 0));
       }
+      p = build_poly();
+
     } else {
       const Var * v = n->get_var();
       Term * t1 = new_term(v, 0);
@@ -472,10 +457,12 @@ Polynomial * gen_gate_constraint(unsigned i) {
         p_tl = negative_poly(model_output_gate->get_var());
       else
         p_tl = positive_poly(model_output_gate->get_var());
-      p->mon_push_back(m1);
 
-      link_poly(p, p_tl);
+      push_mstack_end(m1);
+      Polynomial * p_h = build_poly();
 
+      p = add_poly(p_h, p_tl);
+      delete(p_h);
       delete(p_tl);
     }
 

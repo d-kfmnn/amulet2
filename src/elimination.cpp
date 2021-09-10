@@ -6,11 +6,10 @@
   and for reducing the specification by the slices.
 
   Part of AMulet2.1 : AIG Multiplier Verification Tool.
-  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
 #include <algorithm>
-#include <deque>
 #include <list>
 
 #include "elimination.h"
@@ -527,9 +526,8 @@ Polynomial * mod_poly(const Polynomial *p1, bool print_rule, FILE * file) {
   mpz_t coeff;
   mpz_init(coeff);
 
-  for (std::deque<Monomial*>::const_iterator it=p1->mon_begin();
-      it != p1->mon_end(); ++it) {
-    Monomial * m = *it;
+  for (size_t i = 0 ; i < p1->size(); i++) {
+    Monomial * m = p1->get_mon(i);
     mpz_tdiv_r_2exp(coeff, m->coeff, exp);
     if (mpz_sgn(coeff) != 0) {
       Monomial * tmp;
@@ -546,9 +544,8 @@ Polynomial * mod_poly(const Polynomial *p1, bool print_rule, FILE * file) {
   if (pac_print || proof == 3) {
     mpz_t quot;
     mpz_init(quot);
-    for (std::deque<Monomial*>::const_iterator it = p1->mon_begin();
-        it != p1->mon_end(); ++it) {
-      Monomial * m = *it;
+    for (size_t i = 0 ; i < p1->size(); i++) {
+      Monomial * m = p1->get_mon(i);
 
       mpz_tdiv_q_2exp(quot, m->coeff, exp);
       if (mpz_sgn(quot) != 0) {
@@ -586,9 +583,8 @@ Polynomial * mod_poly(const Polynomial *p1, bool print_rule, FILE * file) {
 /*------------------------------------------------------------------------*/
 
 void correct_pp_unsigned(const Polynomial * p, FILE * file) {
-  for (std::deque<Monomial *>::const_iterator it=p->mon_begin();
-      it != p->mon_end(); ++it) {
-    Monomial * m = *it;
+  for (size_t i = 0 ; i < p->size(); i++) {
+    Monomial * m = p->get_mon(i);
 
     if (mpz_sgn(m->coeff) == -1) {
       Term * t = m->get_term();
@@ -622,9 +618,8 @@ void correct_pp_signed(const Polynomial * p, FILE * file) {
   mpz_init(half_mod_neg);
   mpz_neg(half_mod_neg, half_mod);
 
-  for (std::deque<Monomial *>::const_iterator it=p->mon_begin();
-      it != p->mon_end(); ++it) {
-    Monomial * m = *it;
+  for (size_t i = 0 ; i < p->size(); i++) {
+    Monomial * m = p->get_mon(i);
     Term * t = m->get_term();
     if (!t) continue;
     if (t->get_var_num() <= 0) continue;
@@ -755,9 +750,8 @@ const Polynomial * reduce(FILE * file) {
 /*------------------------------------------------------------------------*/
 
 bool check_inputs_only(const Polynomial *p) {
-  for (std::deque<Monomial*>::const_iterator it=p->mon_begin();
-      it != p->mon_end(); ++it) {
-    Monomial * m = *it;
+  for (size_t i = 0 ; i < p->size(); i++) {
+    Monomial * m = p->get_mon(i);
     if (!m->get_term()) { continue;
     } else {
       const Var * v = m->get_term()->get_var();
@@ -809,9 +803,8 @@ void write_witnesses(const Polynomial * p, FILE * file) {
 
     fprintf(file, "\n");
   } else {
-    for (std::deque<Monomial*>::const_iterator it = p->mon_begin();
-        it != p->mon_end(); ++it) {
-      Monomial * m = *it;
+    for (size_t i = 0 ; i < p->size(); i++) {
+      Monomial * m = p->get_mon(i);
       if (m->get_term()) {
         int tlen = m->get_term_size();
         if (tlen == len) write_witness_vector(m->get_term(), file);

@@ -6,7 +6,7 @@
   and for reducing the specification by the slices.
 
   Part of AMulet2.1 : AIG Multiplier Verification Tool.
-  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
 #ifndef AMULET2_SRC_ELIMINATION_H_

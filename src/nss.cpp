@@ -3,7 +3,7 @@
     \brief contains functions necessary to generate Nullstellensatz proofs
 
   Part of AMulet2.1 : AIG Multiplier Verification Tool.
-  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
 #include <map>
@@ -95,9 +95,10 @@ void add_ancestors(
   if (!internal) {
     std::map<Gate*, Polynomial*>::const_iterator it = n->search_in_anc(n);
     if (it == n->anc_end()) {
-      Polynomial * p = new Polynomial();
+
       Monomial * m1 = new Monomial(one, 0);
-      p->mon_push_back(m1);
+      push_mstack_end(m1);
+      Polynomial * p = build_poly();
       n->set_ancestor(n, p);
     }
   }

@@ -2,8 +2,8 @@
 /*! \file hash_val.cpp
     \brief contains functions used to compute hash values for variables
 
-  Part of AMulet2 : AIG Multiplier Verification Tool.
-  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
 #include <random>

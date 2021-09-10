@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------*/
 /* AMulet2 : AIG Multiplier Verification Tool.
  *
- * Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+ * Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
  *
  * substitution.h: functions used for adder substitution
  */

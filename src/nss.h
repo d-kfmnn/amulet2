@@ -3,7 +3,7 @@
     \brief contains functions necessary to generate Nullstellensatz proofs
 
   Part of AMulet2.1 : AIG Multiplier Verification Tool.
-  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
 #ifndef AMULET2_SRC_NSS_H_

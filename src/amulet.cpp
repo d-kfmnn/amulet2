@@ -3,7 +3,7 @@
     \brief main file of our tool AMulet2
 
   Part of AMulet2.1 : AIG Multiplier Verification Tool.
-  Copyright(C) 2020 Daniela Kaufmann, Johannes Kepler University Linz
+  Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
 #define VERSION "2.1"
@@ -103,7 +103,7 @@ static void reset_all() {
 int main(int argc, char ** argv) {
   msg("AMulet Version " VERSION);
   msg("Aiger multiplier examination tool");
-  msg("Copyright(C) 2020, Daniela Kaufmann, Johannes Kepler University Linz");
+  msg("Copyright(C) 2020, 2021, Daniela Kaufmann, Johannes Kepler University Linz");
 
   for (int i = 1; i < argc; i++) {
     if (!strcmp(argv[i], "-h") ||
