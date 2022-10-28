@@ -1,9 +1,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-AMulet 2.1 - AIG Multiplier Examination Tool
+AMulet 2.2 - AIG Multiplier Examination Tool
 ================================================================================
 
-Our tool AMulet 2.1 is able to verify and certify unsigned and signed 
+Our tool AMulet 2.2 is able to verify and certify unsigned and signed 
 integer multipliers given as AIGs.
 
 For further information we refer to the paper
@@ -64,6 +64,9 @@ Depending on the `<mode>` the `<output files>` and `<options>` have to be set ac
          -p3          condensed proof(one single linear combination)
 
 --------------------------------------------------
+28.10.2022 AMulet 2.2:
+  - Several bugfixes in the slicing routine, described in our TAP'22 paper [`Fuzzing and Delta Debugging And-Inverter Graph Verification Tools.`](https://danielakaufmann.at/wp-content/uploads/2022/07/TAP_Kaufmann.pdf)
+
 10.09.2021 AMulet 2.1:
   - Reducing memory usage by changing data structure of polynomials
 
