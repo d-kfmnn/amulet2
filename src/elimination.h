@@ -5,7 +5,7 @@
   This file contains all functions used for preprocessing the Gröbner basis
   and for reducing the specification by the slices.
 
-  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Part of AMulet2 : AIG Multiplier Verification Tool.
   Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/

@@ -2,7 +2,7 @@
 /*! \file polynomial_solver.h
     \brief contains the polynomial solving routine
 
-  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Part of AMulet2 : AIG Multiplier Verification Tool.
   Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
@@ -33,8 +33,10 @@ void init_gates_verify();
     @param out_f2 name of second output file
     @param out_f3 name of third output file
     @param certify true when modus -certify is used
+
+    @returns boolean whether circuit is correct (1) or incorrect (0)
 */
-void verify(const char * inp_f = 0,
+bool verify(const char * inp_f = 0,
             const char * out_f1 = 0,
             const char * out_f2 = 0,
             const char * out_f3 = 0,

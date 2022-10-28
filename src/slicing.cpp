@@ -2,7 +2,7 @@
 /*! \file slicing.cpp
     \brief contains functions slice and order the gates
 
-  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Part of AMulet2 : AIG Multiplier Verification Tool.
   Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
@@ -10,6 +10,9 @@
 #include <utility>
 
 #include "slicing.h"
+/*------------------------------------------------------------------------*/
+// ERROR CODES:
+static int err_top_child  = 31; // error in topological_largest_child
 /*------------------------------------------------------------------------*/
 // Global var
 std::vector<std::list<Gate*>> slices;
@@ -25,67 +28,51 @@ void init_slices() {
   }
 }
 
-/*------------------------------------------------------------------------*/
 
-void print_slices() {
-  for (int i = NN-1; i >= 0; i--) {
-    msg("");
-    msg("Slice %i", i);
-    msg("");
-    std::list<Gate*> l = slices[i];
-    for (std::list<Gate*>::const_iterator it=l.begin(); it != l.end(); ++it) {
-      Gate * n = *it;
-      fprintf(stdout, "[amulet2] ");
-      n->print_gate_constraint(stdout);
-    }
+void clean_slices(){
+  for (int i=NN-1; i>= 0; i--) {
+  std::list<Gate*> sl = slices[i];
+
+  while(sl.size() > 1){
+    Gate * n = sl.back();
+    n->set_slice(-1);
+    sl.pop_back();
+  }
+
+  slices[i] = sl;
   }
 }
 
 /*------------------------------------------------------------------------*/
 
-const Gate * topological_largest_child(const Gate * n) {
-  int slice = n->children_front()->get_slice();
-  for (std::list<Gate*>::const_iterator it_n = n->children_begin();
-      it_n != n->children_end(); ++it_n) {
-    Gate * n_child = *it_n;
-    if (n_child->get_slice() != slice)
-      die("error in topological_largest_child with %s", n->get_var_name());
-  }
 
-  Gate * n1 = n->children_front();
+bool is_valid_available_xor(Gate * g, int i){
 
-  for (std::list<Gate*>::const_iterator it_s = slices[n1->get_slice()].begin();
-      it_s != slices[n1->get_slice()].end(); ++it_s) {
-    Gate * n_slice = *it_s;
-    for (std::list<Gate*>::const_iterator it_n = n->children_begin();
-        it_n != n->children_end(); ++it_n) {
-      Gate * n_child = *it_n;
-      if (n_slice == n_child) return n_child;
+  if (g->get_slice() != -1) return 0;
+
+
+  if (i == (int) NN-1){
+    for (auto it = g->parents_begin(); it != g->parents_end(); ++it) {
+      Gate * p = *it;
+      if (p->get_slice() < i) return 0;
     }
   }
+
+  if(g->get_pp()){
+    for (auto it = g->parents_begin(); it != g->parents_end(); ++it) {
+      Gate * p = *it;
+      if (p->get_slice() < i) return 0;
+    }
+    return 1;
+  }
+
+  if(g->get_xor_gate() == 1) return 1;
+
   return 0;
 }
 
 /*------------------------------------------------------------------------*/
 
-void fix_slice(Gate * n, int i) {
-  const Gate * after = topological_largest_child(n);
-
-  if (n->get_slice() != -1) slices[n->get_slice()].remove(n);
-  if (n->get_elim()) return;
-  n->set_slice(i);
-  for (std::list<Gate*>::const_iterator it = slices[i].begin();
-      it != slices[i].end(); ++it) {
-    Gate * n_it = *it;
-    if (n_it == after) {
-      slices[i].insert(it, n);
-      return;
-    }
-  }
-  slices[i].push_back(n);
-}
-
-/*------------------------------------------------------------------------*/
 
 void slice_by_xor_chains() {
   for (unsigned i = 0; i < NN; i++) {
@@ -95,27 +82,25 @@ void slice_by_xor_chains() {
     if(!output->children_size()) continue;
     assert(output->children_size() == 1);
     Gate * child = output->children_front();
+    if(child->get_slice() != -1) continue;
+    if(child->get_input()) continue;
 
     std::queue<Gate*> downwards_queue;
+    child->set_slice(i);
+    slices[i].push_back(child);
 
-    if (i != NN-1) {
+    if (i != NN-1 || child->get_xor_gate() == 1) {
       downwards_queue.push(child);
-      child->set_slice(i);
-      slices[i].push_back(child);
-    } else if (child->get_xor_gate() == 1) {
-      downwards_queue.push(child);
-      child->set_slice(i);
-      slices[i].push_back(child);
     }
 
     while (!downwards_queue.empty()) {
       Gate * n = downwards_queue.front();
       downwards_queue.pop();
-      for (std::list<Gate*>::const_iterator it = n->children_begin();
-          it != n->children_end(); ++it) {
+
+      for (auto it = n->children_begin(); it != n->children_end(); ++it) {
         Gate * n_child = *it;
-        if (n_child->get_slice() == -1 && !n_child->get_aig_output() &&
-            (n_child->get_xor_gate() == 1 || n_child->get_pp())) {
+
+        if (is_valid_available_xor(n_child, i)) {
           if (!n_child->get_pp()) downwards_queue.push(n_child);
           n_child->set_slice(i);
           slices[i].push_back(n_child);
@@ -125,38 +110,135 @@ void slice_by_xor_chains() {
       }
     }
   }
+
 }
 
 /*------------------------------------------------------------------------*/
+static void move_inserted_children_from_larger_slices
+  (Gate *n, std::list<Gate*>::const_iterator it){
+    int i = n->get_slice();
+    auto insert_pos = it;
+    for(auto iit = n->children_begin(); iit != n->children_end(); ++iit){
+      Gate * n_child = *iit;
+      if (n_child->get_input()) continue;
 
-void upwards_slicing(const Gate * n, const Gate * pre) {
-  if (n->get_slice() == -1 && pre->get_aig_output()) return;
+      if(n_child->get_slice() == i){
+        for (auto it = slices[i].begin(); it != slices[i].end(); ++it) {
+          Gate * n_it = *it;
+          if(n_it == n) break;
+          if(n_it == n_child){
+            slices[i].remove(n_child);
+            slices[n->get_slice()].insert(insert_pos, n_child);
+            msg("internally moved %s", n_child->get_var_name());
+            move_inserted_children_from_larger_slices(n_child, insert_pos);
+            break;
+          }
+        }
+      } else if(n_child->get_slice() > i) {
+        slices[n->get_slice()].insert(insert_pos, n_child);
+        slices[n_child->get_slice()].remove(n_child);
+        n_child->set_slice(n->get_slice());
+        msg("moved %s", n_child->get_var_name());
+        move_inserted_children_from_larger_slices(n_child, insert_pos);
+      }
+    }
+}
 
-  for (std::list<Gate*>::const_iterator it = n->parents_begin();
+
+
+static bool children_are_assigned_in_larger_slices(Gate * n, int i){
+  for(auto it = n->children_begin(); it != n->children_end(); ++it){
+    Gate * n_child = *it;
+    if (n_child->get_slice()> i) return 1;
+  }
+  return 0;
+}
+/*------------------------------------------------------------------------*/
+void print_slices(){
+
+  for (int i=NN-1; i>= 0; i--) {
+  std::list<Gate*> sl = slices[i];
+  msg("slice %i", i);
+  for (auto it=sl.begin(); it != sl.end(); ++it) {
+    Gate * n_it = *it;
+    msg("%s", n_it->get_var_name());
+    }
+  msg("");
+  }
+}
+
+static bool upwards_slicing(const Gate * n, const Gate * pre) {
+  if (n->get_slice() == -1 && pre->get_aig_output()) return 0;
+
+
+  for (auto it = n->parents_begin();
        it != n->parents_end(); ++it) {
     Gate * n_parent = *it;
+
+    if (n_parent->get_elim()) continue;
     if (n_parent->get_slice() != -1) continue;
-    if (n_parent->get_xor_gate() == 1) continue;
     if (n_parent->get_output()) continue;
+
 
     if (!parents_are_in_equal_or_larger_slice(n_parent, pre->get_slice()))
       continue;
 
+    if( children_are_assigned_in_larger_slices(n_parent, 0)){
+      if (pre->get_slice() == 0) continue;
+      if(n_parent->get_carry_gate() -1 > pre->get_slice()) continue;
+    }
+
     n_parent->set_slice(pre->get_slice());
 
+
+
     if (!pre->is_child(n_parent)) {
-      for (
-        std::list<Gate*>::const_iterator it = slices[pre->get_slice()].begin();
-        it != slices[pre->get_slice()].end(); ++it) {
+      int par_in_slice = 0;
+      std::list<Gate*> parents_in_slice;
+      for (auto it = slices[pre->get_slice()].begin();
+            it != slices[pre->get_slice()].end(); ++it) {
         Gate * cmp = *it;
-        if (cmp == pre) {
+        if (n_parent->is_in_parents(cmp)) {
+          parents_in_slice.push_back(cmp);
+        }
+      }
+      par_in_slice = parents_in_slice.size();
+
+      for ( auto it = slices[pre->get_slice()].begin();
+            it != slices[pre->get_slice()].end(); ++it) {
+        Gate * cmp = *it;
+
+        if(n_parent->is_child(cmp) && par_in_slice){
+          if(par_in_slice > 1) return 1;
+
           slices[pre->get_slice()].insert(it, n_parent);
+
+
+          for(auto iit =parents_in_slice.begin(); iit != parents_in_slice.end(); ++iit){
+            Gate * tmp = *iit;
+            auto insert_pos = it;
+            slices[pre->get_slice()].insert(--insert_pos, tmp);
+            par_in_slice--;
+          }
+        } else if (((cmp == pre || n_parent->is_child(cmp)) && !par_in_slice)) {
+
+          slices[n_parent->get_slice()].insert(it, n_parent);
+
+          move_inserted_children_from_larger_slices(n_parent, it);
+          break;
+        } else if (n_parent->is_in_parents(cmp) && par_in_slice > 1) {
+          par_in_slice--;
+          parents_in_slice.remove(cmp);
+        } else if (n_parent->is_in_parents(cmp) && par_in_slice == 1 ) {
+          msg("insert %s after %s", n_parent->get_var_name(), cmp->get_var_name());
+          slices[n_parent->get_slice()].insert(++it, n_parent);
+          move_inserted_children_from_larger_slices(n_parent, it);
           break;
         }
       }
     } else {
-      for (
-        std::list<Gate*>::const_iterator it = slices[pre->get_slice()].begin();
+      //does this ever happen?!
+      for ( auto it = slices[pre->get_slice()].begin();
         it != slices[pre->get_slice()].end(); ++it) {
         Gate * cmp = *it;
         if (cmp == pre) {
@@ -165,15 +247,21 @@ void upwards_slicing(const Gate * n, const Gate * pre) {
         }
       }
     }
+
     if (!n_parent->get_carry_gate()) {
-      upwards_slicing(n_parent, n_parent);
+      if(upwards_slicing(n_parent, n_parent)) return 1;
+    } else if (!n_parent->all_parents_are_sliced()) {
+      if(upwards_slicing(n_parent, n_parent)) return 1;
     }
   }
+
+  return 0;
+
 }
 
 /*------------------------------------------------------------------------*/
 
-void slice_jut_gates() {
+static bool slice_jut_gates() {
   for (int i = NN-1; i >= 0; i--) {
     Gate * output = gates[i+M-1];
     output->set_slice(i);
@@ -192,31 +280,82 @@ void slice_jut_gates() {
       Gate * n = downwards_queue.front();
       downwards_queue.pop();
 
-      for (std::list<Gate*>::const_iterator it = n->children_begin();
-          it != n->children_end(); ++it) {
+      for (auto it = n->children_begin(); it != n->children_end(); ++it) {
         Gate * n_child = *it;
+
         if (n_child->get_slice() == static_cast<int>(i))
           downwards_queue.push(n_child);
 
         if ((n_child->get_xor_gate() == 1 || n_child->get_pp())) {
           if (n_child->get_slice() == static_cast<int>(i))
-            upwards_slicing(n_child, n_child);
+            if(upwards_slicing(n_child, n_child)) return 1;
+
         } else if (n_child->get_carry_gate() == static_cast<int>(i) &&
             !n_child->get_input()) {
-          if (n_child->get_pp()) { upwards_slicing(n_child, n);
-          } else if (!n_child->get_pp() &&
-                   !n_child->children_front()->get_input() &&
-                   !n_child->children_back()->get_input()) {
-                     upwards_slicing(n_child, n);
+            if (n_child->get_pp()) {
+                if(upwards_slicing(n_child, n)) return 1;
+            } else if (!n_child->get_pp() &&
+              !n_child->children_front()->get_input() &&
+              !n_child->children_back()->get_input()) {
+                if(upwards_slicing(n_child, n)) return 1;
           }
         }
       }
     }
   }
+  return 0;
+}
+
+/*------------------------------------------------------------------------*/
+const Gate * topological_largest_child(const Gate * n) {
+  int slice = n->children_front()->get_slice();
+  for (auto it_n = n->children_begin(); it_n != n->children_end(); ++it_n) {
+    Gate * n_child = *it_n;
+    if (n_child ->get_input()) return 0;
+    if (n_child->get_slice() != slice)
+      die(err_top_child, "error in topological_largest_child with %s %s %i %s %i",
+      //msg("error in topological_largest_child with %s %s %i %s %i",
+      n->get_var_name(),
+      n->children_front()->get_var_name(), slice,
+      n_child->get_var_name(), n_child->get_slice());
+  }
+
+  Gate * n1 = n->children_front();
+
+  for (auto it_s = slices[n1->get_slice()].begin();
+      it_s != slices[n1->get_slice()].end(); ++it_s) {
+    Gate * n_slice = *it_s;
+    for (auto it_n = n->children_begin(); it_n != n->children_end(); ++it_n) {
+      Gate * n_child = *it_n;
+      if (n_slice == n_child) return n_child;
+    }
+  }
+  return 0;
 }
 
 /*------------------------------------------------------------------------*/
 
+void fix_slice(Gate * n, int i) {
+  const Gate * after = topological_largest_child(n);
+  if(!after) return;
+
+  if (n->get_slice() != -1) slices[n->get_slice()].remove(n);
+  if (n->get_elim()) return;
+  n->set_slice(i);
+  for (std::list<Gate*>::const_iterator it = slices[i].begin();
+      it != slices[i].end(); ++it) {
+    Gate * n_it = *it;
+    if (n_it == after) {
+      msg("fix slice of %s",n->get_var_name());
+      slices[i].insert(it, n);
+      return;
+    }
+  }
+  msg("fix slice of %s",n->get_var_name());
+  slices[i].push_back(n);
+}
+
+/*------------------------------------------------------------------------*/
 int fix_xors() {
   int counter = 0;
   for (unsigned i = NN; i < M-1; i++) {
@@ -225,6 +364,7 @@ int fix_xors() {
     if (n->get_xor_gate() != 1) continue;
     if (n->get_aig_output()) continue;
 
+
     aiger_and * and1 = is_model_and(n->get_var_num());
     unsigned l = and1->rhs0, r = and1->rhs1;
     Gate *l_gate = gate(l), *r_gate = gate(r);
@@ -232,6 +372,7 @@ int fix_xors() {
     aiger_and * land = is_model_and(l);
     unsigned ll = land->rhs0, lr = land->rhs1;
     Gate *ll_gate = gate(ll), *lr_gate = gate(lr);
+    if(ll_gate->get_pp() || lr_gate->get_pp()) continue;
     if (ll_gate->get_slice() < lr_gate->get_slice())
       std::swap(ll_gate, lr_gate);
 
@@ -256,12 +397,13 @@ int fix_xors() {
 
         fix_slice(n, n->get_slice()-1);
         ++counter;
-        if (verbose >= 3)
+      if (verbose >= 3)
           msg("moved gate %s to slice %i", n->get_var_name(), n->get_slice());
       }
     }
   }
-  if (verbose >= 1) msg("moved %i gates to smaller slices", counter);
+  if (verbose >= 1)
+    msg("moved %i gates to smaller slices", counter);
   return counter;
 }
 
@@ -301,10 +443,11 @@ void fix_jut_gates() {
 
 /*------------------------------------------------------------------------*/
 
-void slicing_xor() {
+bool slicing_xor() {
 
   slice_by_xor_chains();
-  slice_jut_gates();
+  if(slice_jut_gates()) return 1;
+
   for (int i=NN-1; i>= 0; i--) {
   std::list<Gate*> sl = slices[i];
   for (std::list<Gate*>::const_iterator it=sl.begin(); it != sl.end(); ++it) {
@@ -313,6 +456,8 @@ void slicing_xor() {
     }
   }
   if (fix_xors()) fix_jut_gates();
+
+  return 0;
 }
 
 /*------------------------------------------------------------------------*/
@@ -371,9 +516,10 @@ bool search_for_booth_pattern() {
       n->mark_bo();
       found_booth = 1;
     } else {
+
       // all other slices
       if (n->get_pp()) continue;
-      if (!n->get_xor_gate()) continue;
+      if (n->get_xor_gate() != 1) continue;
       if (n->parents_size() != 1) continue;
 
       aiger_and * and_init = is_model_and(n->get_var_num());
@@ -386,11 +532,13 @@ bool search_for_booth_pattern() {
       if (!gate(ll)->get_input() || !gate(lr)->get_input()) continue;
 
 
+
       Gate * xor1 = n;
       aiger_and * and1 = is_model_and(xor1->get_var_num());
 
       Gate * vp = xor1->parents_front();
-      unsigned p = vp->get_var_num();
+      int p = vp->get_var_num();
+      if(p < 0) continue;
       aiger_and * parent = is_model_and(p);
       unsigned pl = parent->rhs0, pr = parent->rhs1;
       Gate * xor2 =
@@ -575,4 +723,6 @@ void slicing_non_xor() {
   merge_all();
   promote_all();
   fill_slices();
+
+  if (verbose > 3) print_slices();
 }

@@ -2,7 +2,7 @@
 /*! \file signal_statistics.cpp
     \brief used to handle signals, messages and statistics
 
-  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Part of AMulet2 : AIG Multiplier Verification Tool.
   Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
@@ -72,16 +72,17 @@ void msg(const char *fmt, ...) {
 
 /*------------------------------------------------------------------------*/
 
-void die(const char *fmt, ...) {
+void die(int error_code, const char *fmt, ...) {
   fflush(stdout);
   va_list ap;
+  fprintf(stderr, "*** [amulet2] error code %i \n", error_code);
   fputs_unlocked("*** [amulet2] ", stderr);
   va_start(ap, fmt);
   vfprintf(stderr, fmt, ap);
   va_end(ap);
   fputc('\n', stderr);
   fflush(stderr);
-  exit(1);
+  exit(error_code);
 }
 
 /*------------------------------------------------------------------------*/

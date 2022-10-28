@@ -2,13 +2,16 @@
 /*! \file substitution.cpp
     \brief contains function to apply adder substitution
 
-  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Part of AMulet2 : AIG Multiplier Verification Tool.
   Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
 #include <list>
 
 #include "substitution.h"
+/*------------------------------------------------------------------------*/
+// ERROR CODES:
+static int err_miter = 71; // error in miter
 /*------------------------------------------------------------------------*/
 // Local variables
 
@@ -645,7 +648,7 @@ bool build_adder_miter() {
 /*----------------------------------------------------------------------------*/
 bool miter_to_file(FILE * file) {
   if (!file) return 0;
-  if (miter->num_outputs > 1) die("miter has more than one output");
+  if (miter->num_outputs > 1) die(err_miter, "miter has more than one output");
 
   msg("transform aiger miter to cnf miter");
   int *map, m, n;

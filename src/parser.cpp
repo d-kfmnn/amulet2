@@ -2,11 +2,19 @@
 /*! \file parser.cpp
     \brief contains functions necessary to parse the AIG
 
-  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Part of AMulet2 : AIG Multiplier Verification Tool.
   Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
 #include "parser.h"
+/*------------------------------------------------------------------------*/
+// ERROR CODES:
+static int err_parsing       = 20; // general parsing error
+static int err_latches       = 21; // cannot handle latches
+static int err_no_inputs     = 22; // no inputs
+static int err_odd_inputs    = 23; // odd inputs
+static int err_no_outputs    = 24; // no outputs
+static int err_wrong_outputs = 25; // wrong number of outputs
 /*------------------------------------------------------------------------*/
 
 bool match_and(unsigned lhs, unsigned rhs0, unsigned rhs1) {
@@ -65,15 +73,15 @@ void determine_input_order() {
 /*------------------------------------------------------------------------*/
 
 void init_aiger_with_checks() {
-  if (get_model_num_latches()) die("can not handle latches");
-  if (!get_model_num_inputs()) die("no inputs");
-  if ((get_model_num_inputs() & 1)) die("odd number of inputs");
-  if (!get_model_num_outputs()) die("no outputs");
+  if (get_model_num_latches()) die(err_latches, "can not handle latches");
+  if (!get_model_num_inputs()) die(err_no_inputs, "no inputs");
+  if ((get_model_num_inputs() & 1)) die(err_odd_inputs, "odd number of inputs");
+  if (!get_model_num_outputs()) die(err_no_outputs, "no outputs");
   if (get_model_num_outputs() == get_model_num_inputs()) {
     M = get_model_maxvar() + 1;
     NN = get_model_num_outputs();
   }
-  else  die("expected %u but got %u outputs",
+  else  die(err_wrong_outputs, "expected %u but got %u outputs",
       get_model_num_inputs(), get_model_num_outputs());
 
 
@@ -94,7 +102,7 @@ void parse_aig(const char * input_name) {
 
   msg("reading '%s'", input_name);
   const char * err = aiger_open_and_read_to_model(input_name);
-  if (err) die("error parsing '%s': %s", input_name, err);
+  if (err) die(err_parsing, "error parsing '%s': %s", input_name, err);
 
   init_aiger_with_checks();
 }

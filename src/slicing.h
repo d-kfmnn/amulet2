@@ -2,7 +2,7 @@
 /*! \file slicing.h
     \brief contains functions slice and order the gates
 
-  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Part of AMulet2 : AIG Multiplier Verification Tool.
   Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
@@ -40,47 +40,10 @@ void print_slices();
 const Gate * topological_largest_child(const Gate * n);
 
 /**
-    Move gate n to slice i and insert it before it's topological_largest_child.
-
-    @param n Gate*
-    @param i integer, for new slice index
-*/
-void fix_slice(Gate *n, int i);
-
-/**
-    Attach gates to slices by following xor-chains from the output gates.
-*/
-void slice_by_xor_chains();
-
-/**
-    Inserts the parents of n before pre in the slice of pre
-
-    @param n Gate*
-    @param pre Gate*
-*/
-void upwards_slicing(const Gate * n, const Gate * pre);
-
-/**
-    Slice gates that are between xor-chains, using upwards_slicing
-*/
-void slice_jut_gates();
-
-/**
-    Fix some xors, that are assigned to different slices
-   (needed for 7,3 counter trees )
-*/
-int fix_xors();
-
-/**
-    If fix_xors() is applied also the jut gates need to be fixed.
-*/
-void fix_jut_gates();
-
-/**
     Overall slicing routine based on xor gates, calls all other functions
     automatically
 */
-void slicing_xor();
+bool slicing_xor();
 
 /*------------------------------------------------------------------------*/
 
@@ -118,6 +81,12 @@ void promote_all();
     Fills the slices by adding the gates that are assigned to slices
 */
 void fill_slices();
+
+
+/**
+    Undoes slicing attempt
+*/
+void clean_slices();
 
 /**
     Overall slicing routine, that does not depend on xor-chains

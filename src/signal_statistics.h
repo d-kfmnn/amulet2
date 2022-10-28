@@ -2,7 +2,7 @@
 /*! \file signal_statistics.h
     \brief used to handle signals, messages and statistics
 
-  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Part of AMulet2 : AIG Multiplier Verification Tool.
   Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
@@ -56,8 +56,9 @@ extern int verbose;
     Prints an error message to stderr and exits the program
 
     @param char* fmt message
+    @param int error_code
 */
-void die(const char *fmt, ...);
+void die(int error_code, const char *fmt,...);
 
 /**
     Prints a message to stdout

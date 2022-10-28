@@ -3,7 +3,7 @@
     \brief contains the class Gate and further functions to
     organize the gate structure, such as initializing the gate constraints
 
-  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Part of AMulet2 : AIG Multiplier Verification Tool.
   Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
@@ -16,6 +16,9 @@
 bool xor_chain = 0;
 bool booth = 0;
 bool signed_mult = 0;
+/*------------------------------------------------------------------------*/
+// ERROR CODES:
+static int err_allocate       = 91; // failed to allocate gates
 /*------------------------------------------------------------------------*/
 
 Gate::Gate(int n_, std::string name_, int level_, bool input_, bool output_):
@@ -40,10 +43,18 @@ Gate::~Gate() {
 }
 
 /*------------------------------------------------------------------------*/
+bool Gate::all_parents_are_sliced() const {
+  for (auto it=parents_begin(); it != parents_end(); ++it) {
+    Gate * parents = *it;
+    if (parents->get_slice() == -1) return 0;
+  }
+  return 1;
+}
+
+/*------------------------------------------------------------------------*/
 
 bool Gate::is_in_parents(const Gate * n) const {
-  for (std::list<Gate*>::const_iterator it=parents_begin();
-      it != parents_end(); ++it) {
+  for (auto it=parents_begin(); it != parents_end(); ++it) {
     Gate * parents = *it;
     if (parents == n) return 1;
   }
@@ -53,7 +64,7 @@ bool Gate::is_in_parents(const Gate * n) const {
 /*------------------------------------------------------------------------*/
 
 bool Gate::is_child(const Gate * n) const {
-  for (std::list<Gate*>::const_iterator it=children_begin();
+  for (std::list<Gate*>::const_iterator it = children_begin();
       it != children_end(); ++it) {
     Gate * child = *it;
     if (child == n) return 1;
@@ -93,7 +104,7 @@ void allocate_gates(bool assert) {
   msg("allocating %i gates", num_gates);
   gates = new Gate*[num_gates];
 
-  if (!gates) die("failed to allocate gates");
+  if (!gates) die(err_allocate, "failed to allocate gates");
   int level = 0;
 
   // inputs a
@@ -258,8 +269,10 @@ void mark_xor_chain_in_last_slice() {
   int counter = 0;
 
   Gate * out = gates[num_gates-1];
+  if(out->children_size() == 0) return;
   assert(out->children_size() == 1);
   Gate * child = out->children_front();
+  if(child->get_input()) return;
 
   std::queue<Gate*> downwards_queue;
   if (child->get_xor_gate() == 1) downwards_queue.push(child);
@@ -412,8 +425,8 @@ Polynomial * gen_gate_constraint(unsigned i) {
     assert(and1);
 
     unsigned l = and1->rhs0, r = and1->rhs1;
-    Gate * l_gate = gate(l), *r_gate = gate(r);
 
+    Gate * l_gate = gate(l), *r_gate = gate(r);
     const Var * v = n->get_var();
     Term * t1 = new_term(v, 0);
     Monomial * m1 = new Monomial(minus_one, t1);
@@ -425,7 +438,6 @@ Polynomial * gen_gate_constraint(unsigned i) {
     Polynomial * p_tl = multiply_poly(p1, p2);
 
     p = add_poly(p_h, p_tl);
-
     delete(p_h);
     delete(p_tl);
 

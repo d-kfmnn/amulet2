@@ -3,7 +3,7 @@
     \brief contains the class Gate and further functions to
     organize the gate structure, such as initializing the gate constraints
 
-  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Part of AMulet2 : AIG Multiplier Verification Tool.
   Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
@@ -433,6 +433,10 @@ class Gate {
     return parents.begin();
   }
 
+  std::list<Gate*>::const_reverse_iterator parents_rbegin() const {
+    return parents.rbegin();
+  }
+
   /**
       Getter for end of parents
 
@@ -442,12 +446,23 @@ class Gate {
     return parents.end();
   }
 
+  std::list<Gate*>::const_reverse_iterator parents_rend() const {
+    return parents.rend();
+  }
+
   /**
       Getter for size of parents
 
       @return size_t
   */
   size_t parents_size() const {return parents.size();}
+
+  /**
+      Returns whether all parents are contained in slcies
+
+      @return bool
+  */
+  bool all_parents_are_sliced() const;
 
   /**
       Getter for front of parents

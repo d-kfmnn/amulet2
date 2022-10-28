@@ -2,7 +2,7 @@
 /*! \file polynomial.cpp
     \brief contains arithmetic operations for polynomials
 
-  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Part of AMulet2 : AIG Multiplier Verification Tool.
   Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
@@ -210,6 +210,8 @@ Polynomial * build_poly() {
 /*------------------------------------------------------------------------*/
 
 Polynomial * add_poly(const Polynomial * p1, const Polynomial * p2) {
+  if(!p1) return p2->copy();
+  if(!p2) return p1->copy();
   assert(p1);
   assert(p2);
 
@@ -277,6 +279,9 @@ Polynomial * add_poly(const Polynomial * p1, const Polynomial * p2) {
 
 Polynomial * multiply_poly(const Polynomial * p1, const Polynomial * p2) {
   if(!p1 || !p2) return 0;
+  assert(p1);
+  assert(p2);
+  
   mpz_t coeff;
   mpz_init(coeff);
   Term * t;

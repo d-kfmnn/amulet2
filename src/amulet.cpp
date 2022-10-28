@@ -2,11 +2,11 @@
 /*! \file amulet.cpp
     \brief main file of our tool AMulet2
 
-  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Part of AMulet2 : AIG Multiplier Verification Tool.
   Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
-#define VERSION "2.1"
+#define VERSION "2.2"
 /*------------------------------------------------------------------------*/
 // / Manual of AMulet2, will be printed with command line '-h'
 static const char * USAGE =
@@ -77,6 +77,15 @@ static const char * output_name3 = 0;
 // / Selected mode, '-substitute' = 1, '-verify' = 2, '-certify' = 3
 static int mode;
 /*------------------------------------------------------------------------*/
+// ERROR CODES:
+
+static int err_no_file    = 10; // no input file given
+static int err_mode_sel   = 11; // mode has already been selected/not selected
+static int err_wrong_arg  = 12; // wrong number of arguments given
+static int err_proof_form = 13; // too many proof formats selected
+
+
+/*------------------------------------------------------------------------*/
 /**
     Calls the deallocaters of the involved data types
     @see reset_all_signal_handlers()
@@ -121,37 +130,37 @@ int main(int argc, char ** argv) {
         msg("selected mode: adder substitution");
         mode = 1;
       } else {
-        die("mode has alreday been selected(try '-h')");
+        die(err_mode_sel, "mode has alreday been selected(try '-h')");
       }
     } else if (!strcmp(argv[i], "-verify")) {
       if (!mode) {
         msg("selected mode: verification");
         mode = 2;
       } else {
-        die("mode has alreday been selected(try '-h')");
+        die(err_mode_sel, "mode has alreday been selected(try '-h')");
       }
     } else if (!strcmp(argv[i], "-certify")) {
       if (!mode) {
         msg("selected mode: verification + certificates");
         mode = 3;
       } else {
-        die("mode has alreday been selected(try '-h')");
+        die(err_mode_sel, "mode has alreday been selected(try '-h')");
       }
     } else if (!strcmp(argv[i], "-p1")) {
-      if (proof) die("too many proof formats selected(try '-h')");
+      if (proof) die(err_proof_form, "too many proof formats selected(try '-h')");
       proof = 1;
     } else if (!strcmp(argv[i], "-p2")) {
-      if (proof) die("too many proof formats selected(try '-h')");
+      if (proof) die(err_proof_form, "too many proof formats selected(try '-h')");
       proof = 2;
     } else if (!strcmp(argv[i], "-p3")) {
-      if (proof) die("too many proof formats selected(try '-h')");
+      if (proof) die(err_proof_form, "too many proof formats selected(try '-h')");
       proof = 3;
     } else if (!strcmp(argv[i], "-signed")) {
       signed_mult = 1;
     } else if (!strcmp(argv[i], "-no-counter-examples")) {
       gen_witness = 0;
     } else if (output_name3) {
-      die("too many arguments '%s', '%s', '%s', '%s' and '%s'(try '-h')",
+      die(err_wrong_arg, "too many arguments '%s', '%s', '%s', '%s' and '%s'(try '-h')",
         input_name, output_name1, output_name2, output_name3, argv[i]);
     } else if (output_name2) { output_name3 = argv[i];
     } else if (output_name1) { output_name2 = argv[i];
@@ -161,27 +170,27 @@ int main(int argc, char ** argv) {
     }
   }
 
-  if (!mode) die("select mode(try -h for more information)");
-  if (!input_name)  die("no input file given(try '-h')");
+  if (!mode) die(err_mode_sel, "select mode(try -h for more information)");
+  if (!input_name)  die(err_no_file, "no input file given(try '-h')");
   if (mode == 1) {
     if (output_name3)
-      die("too many arguments '%s', '%s', '%s' and '%s'(try '-h')",
+      die(err_wrong_arg, "too many arguments '%s', '%s', '%s' and '%s'(try '-h')",
     input_name, output_name1, output_name2, output_name3);
-    if (!output_name2) die("too few arguments(try '-h')");
+    if (!output_name2) die(err_wrong_arg, "too few arguments(try '-h')");
     if (proof) {
       msg("option -p1, -p2 or -p3 are only possible in -certify");
       msg("and will be ignored");
     }
     proof = 0;
   } else if (mode == 2) {
-    if (output_name1) die("too many arguments(try '-h')");
+    if (output_name1) die(err_wrong_arg, "too many arguments(try '-h')");
     if (proof) {
       msg("option -p1, -p2 or -p3 are only possible in -certify");
       msg("and will be ignored");
     }
     proof = 0;
   } else if (mode == 3) {
-    if (!output_name3) die("too few arguments(try '-h')");
+    if (!output_name3) die(err_wrong_arg, "too few arguments(try '-h')");
     if (!proof) proof = 2;
     if (proof == 3) msg("proof condensed level: high");
     else if (proof == 2) msg("proof condensed level: medium");
@@ -193,13 +202,13 @@ int main(int argc, char ** argv) {
   init_nonces();
 
   parse_aig(input_name);
-
+  bool res;
   if (mode == 1) {
     init_gate_substitution();
-    substitution(output_name1, output_name2);
+    res = substitution(output_name1, output_name2);
   } else {
     init_gates_verify();
-    verify(input_name, output_name1, output_name2, output_name3, mode == 3);
+    res = verify(input_name, output_name1, output_name2, output_name3, mode == 3);
   }
 
   reset_aig_parsing();
@@ -208,5 +217,5 @@ int main(int argc, char ** argv) {
   reset_time = process_time();
   print_statistics(mode);
 
-  return 0;
+  return res;
 }

@@ -2,13 +2,16 @@
 /*! \file pac.cpp
     \brief contains functions necessary to generate PAC proofs
 
-  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Part of AMulet2 : AIG Multiplier Verification Tool.
   Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
 #include "pac.h"
 /*------------------------------------------------------------------------*/
 static int poly_idx;
+/*------------------------------------------------------------------------*/
+// ERROR CODES:
+static int err_rule       = 81; // error in proof rule
 /*------------------------------------------------------------------------*/
 
 void print_circuit_poly(FILE * file) {
@@ -117,7 +120,7 @@ void print_pac_vector_combi_rule(
   FILE * file, std::vector<int> indices,
   std::vector<const Polynomial*> co_factors, Polynomial * p){
 
-  if (co_factors.size() != indices.size()) die("error in proof rule;");
+  if (co_factors.size() != indices.size()) die(err_rule, "combination rule receives invalid arguments;");
 
   fprintf(file, "%u %% ", poly_idx);
 

@@ -5,7 +5,7 @@
   This file contains all functions used for preprocessing the Gröbner basis
   and for reducing the specification by the slices.
 
-  Part of AMulet2.1 : AIG Multiplier Verification Tool.
+  Part of AMulet2 : AIG Multiplier Verification Tool.
   Copyright(C) 2020, 2021 Daniela Kaufmann, Johannes Kepler University Linz
 */
 /*------------------------------------------------------------------------*/
@@ -16,6 +16,11 @@
 /*------------------------------------------------------------------------*/
 // Global variables
 int proof = 0;
+
+/*------------------------------------------------------------------------*/
+// ERROR CODES:
+static int err_writing = 61; // cannot write to
+static int err_witness = 62; // cannot write to
 /*------------------------------------------------------------------------*/
 // Local variables
 
@@ -245,6 +250,7 @@ void remove_internal_xor_gates(FILE * file) {
     ll_gate->parents_push_back(n);
     eliminate_by_one_gate(n, l_gate, file);
 
+
     if (l_gate->parents_size() == 1) {
       if (proof == 1 || proof == 2) {
         assert(file);
@@ -259,6 +265,8 @@ void remove_internal_xor_gates(FILE * file) {
 
       ll_gate->parents_remove(l_gate);
       lr_gate->parents_remove(l_gate);
+    } else {
+      l_gate->parents_remove(n);
     }
 
     eliminate_by_one_gate(n, r_gate, file);
@@ -278,6 +286,8 @@ void remove_internal_xor_gates(FILE * file) {
 
       ll_gate->parents_remove(r_gate);
       lr_gate->parents_remove(r_gate);
+    } else {
+      r_gate->parents_remove(n);
     }
   }
   if (verbose >= 1) msg("removed %i internal xor gates", counter);
@@ -290,9 +300,19 @@ void remove_single_occs_gates(FILE * file) {
   int counter = 0;
   for (unsigned i = NN; i < M-1; i++) {
     Gate * n = gates[i];
-
     if (n->get_elim()) continue;
     if (n->parents_size() > 1) continue;
+
+    //consider unconnected nodes
+    if (n->parents_size() == 0){
+      n->mark_elim();
+      for (std::list<Gate*>::const_iterator it = n->children_begin();
+          it != n->children_end(); ++it) {
+        Gate * n_child = *it;
+        n_child->parents_remove(n);
+      }
+      continue;
+    }
 
     Gate * parent = n->parents_front();
     if (parent->get_output()) continue;
@@ -327,50 +347,72 @@ void remove_single_occs_gates(FILE * file) {
 }
 
 /*------------------------------------------------------------------------*/
+int remove_not_assigned_gate(FILE * file, Gate * n, int count){
+  if(n->get_input()) return count;
+  if(n->get_elim()) return count;
+//  if (n->get_slice() > -1) return count;
+
+
+
+  for (std::list<Gate*>::const_iterator it_c = n->children_begin();
+      it_c != n->children_end(); ++it_c) {
+    Gate * n_child = *it_c;
+    n_child->parents_remove(n);
+  }
+
+  for (std::list<Gate*>::const_iterator it_p = n->parents_begin();
+      it_p != n->parents_end(); ++it_p) {
+    Gate * n_parent = *it_p;
+    if (n_parent->get_elim()) continue;
+    eliminate_by_one_gate(n_parent, n, file);
+    n_parent->children_remove(n);
+
+    for (std::list<Gate*>::const_iterator it_c = n->children_begin();
+        it_c != n->children_end(); ++it_c) {
+      Gate * n_child = *it_c;
+
+      if (!n_parent->is_child(n_child))
+        n_parent->children_push_back(n_child);
+      if (!n_child->is_in_parents(n_parent))
+        n_child->parents_push_back(n_parent);
+    }
+  }
+
+  if (proof == 1 || proof == 2) {
+    assert(file);
+    print_pac_del_rule(file, n->get_gate_constraint());
+  }
+
+  n->mark_elim();
+  count++;
+  delete(n->get_gate_constraint());
+  n->set_gate_constraint(0);
+
+  if (verbose >= 3) msg("removed %s", n->get_var_name());
+
+  for (std::list<Gate*>::const_iterator it_c = n->children_begin();
+      it_c != n->children_end(); ++it_c) {
+    Gate * n_child = *it_c;
+    count = remove_not_assigned_gate(file, n_child, count);
+
+  }
+
+  return count;
+
+}
+
 
 void remove_slice_minus_one_gates(FILE * file) {
   msg("remove gates that are not assigned to slices");
   int counter = 0;
   for (unsigned i = NN; i < M-1; i++) {
     Gate * n = gates[i];
+
     if (n->get_elim()) continue;
     if (n->get_slice() > -1) continue;
     assert(!n->get_input());
-
-    for (std::list<Gate*>::const_iterator it_c = n->children_begin();
-        it_c != n->children_end(); ++it_c) {
-      Gate * n_child = *it_c;
-      n_child->parents_remove(n);
-    }
-
-    for (std::list<Gate*>::const_iterator it_p = n->parents_begin();
-        it_p != n->parents_end(); ++it_p) {
-      Gate * n_parent = *it_p;
-      eliminate_by_one_gate(n_parent, n, file);
-      n_parent->children_remove(n);
-
-      for (std::list<Gate*>::const_iterator it_c = n->children_begin();
-          it_c != n->children_end(); ++it_c) {
-        Gate * n_child = *it_c;
-
-        if (!n_parent->is_child(n_child))
-          n_parent->children_push_back(n_child);
-        if (!n_child->is_in_parents(n_parent))
-          n_child->parents_push_back(n_parent);
-      }
-    }
-
-    if (proof == 1 || proof == 2) {
-      assert(file);
-      print_pac_del_rule(file, n->get_gate_constraint());
-    }
-
-    n->mark_elim();
-    delete(n->get_gate_constraint());
-    n->set_gate_constraint(0);
-
-    counter++;
-    if (verbose >= 3) msg("removed %s", n->get_var_name());
+  
+    counter = remove_not_assigned_gate(file, n, counter);
   }
   if (verbose >= 1)
     msg("removed %i gates that are not assigned to slices", counter);
@@ -767,25 +809,52 @@ bool check_inputs_only(const Polynomial *p) {
 void write_witness_vector(const Term * t, FILE * file) {
   fputs_unlocked("[amulet2]   ", stdout);
 
-  for (unsigned i = 0; i <= NN/2-1; i++) {
-    const Var * v = gates[a0+i*ainc]->get_var();
+  if(ainc == 2){
+    for (unsigned i = 0; i <= NN/2-1; i++) {
+      const Var * v = gates[a0+i*ainc]->get_var();
 
-    if (t->contains(v)) {
-      fprintf(file, "1");
-      fprintf(stdout, "%s = ", v->get_name());
-    } else {
-      fprintf(file, "0");
+      if (t->contains(v)) {
+        fprintf(file, "1");
+        fprintf(stdout, "%s = ", v->get_name());
+      } else {
+        fprintf(file, "0");
+      }
+
+      const Var * w = gates[b0+i*binc]->get_var();
+
+      if (t->contains(w)) {
+        fprintf(file, "1");
+        fprintf(stdout, "%s = ", w->get_name());
+      } else {
+        fprintf(file, "0");
+      }
     }
 
-    const Var * w = gates[b0+i*binc]->get_var();
+  } else if (ainc == 1){
+    for (unsigned i = 0; i <= NN/2-1; i++) {
+      const Var * v = gates[a0+i*ainc]->get_var();
 
-    if (t->contains(w)) {
-      fprintf(file, "1");
-      fprintf(stdout, "%s = ", w->get_name());
-    } else {
-      fprintf(file, "0");
+      if (t->contains(v)) {
+        fprintf(file, "1");
+        fprintf(stdout, "%s = ", v->get_name());
+      } else {
+        fprintf(file, "0");
+      }
+    }
+
+    for (unsigned i = 0; i <= NN/2-1; i++) {
+      const Var * w = gates[b0+i*binc]->get_var();
+
+      if (t->contains(w)) {
+        fprintf(file, "1");
+        fprintf(stdout, "%s = ", w->get_name());
+      } else {
+        fprintf(file, "0");
+      }
     }
   }
+
+
   fprintf(stdout, "1, all other inputs = 0;\n");
   fprintf(file, "\n");
 }
@@ -818,7 +887,7 @@ void write_witnesses(const Polynomial * p, FILE * file) {
 
 void generate_witness(const Polynomial * p, const char * name) {
   if (!check_inputs_only(p))
-  die("cannot generate witness, as remainder polynomial contains non-inputs");
+  die(err_witness, "cannot generate witness, as remainder polynomial contains non-inputs");
 
   #define WITNESSLEN 100
   char witness_name[WITNESSLEN];
@@ -831,7 +900,7 @@ void generate_witness(const Polynomial * p, const char * name) {
 
   FILE * witness_file;
   if (!(witness_file = fopen(witness_name, "w")))
-  die("cannot write output to '%s'", witness_name);
+  die(err_writing, "cannot write output to '%s'", witness_name);
 
   msg("");
   msg("COUNTER EXAMPLES ARE: ");
@@ -846,12 +915,21 @@ void generate_witness(const Polynomial * p, const char * name) {
   msg("");
   msg("Note: 'aiger/aigsim %s %s' produces output in the form:",
   name, witness_name);
-  fputs_unlocked("[amulet2] ", stdout);
-  if (NN == 2)      fprintf(stdout, "  a[0]b[0]  s[0]\n");
-  else if (NN == 4) fprintf(stdout, "  a[0]b[0]a[1]b[1]  s[0]s[1]s[2]s[3]\n");
-  else
-  fprintf(stdout, "  a[0]b[0]a[1]b[1]...a[%u]b[%u]  s[0]s[1]s[2]...s[%u]\n",
-    NN/2-1, NN/2-1, NN-1);
+  if(ainc == 2){
+    fputs_unlocked("[amulet2] ", stdout);
+    if (NN == 2)      fprintf(stdout, "  a[0]b[0]  s[0]\n");
+    else if (NN == 4) fprintf(stdout, "  a[0]b[0]a[1]b[1]  s[0]s[1]s[2]s[3]\n");
+    else
+    fprintf(stdout, "  a[0]b[0]a[1]b[1]...a[%u]b[%u]  s[0]s[1]s[2]...s[%u]\n",
+      NN/2-1, NN/2-1, NN-1);
+  } else {
+    fputs_unlocked("[amulet2] ", stdout);
+    if (NN == 2)      fprintf(stdout, "  a[0]b[0]  s[0]\n");
+    else if (NN == 4) fprintf(stdout, "  a[0]a[1]b[0]b[1]  s[0]s[1]s[2]s[3]\n");
+    else
+    fprintf(stdout, "  a[0]a[1]...a[%u]b[0]b[1]...b[%u]  s[0]s[1]s[2]...s[%u]\n",
+      NN/2-1, NN/2-1, NN-1);
+  }
 
   fclose(witness_file);
 }
