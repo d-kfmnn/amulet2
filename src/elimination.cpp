@@ -230,7 +230,7 @@ void remove_internal_xor_gates(FILE * file) {
     if (n->get_xor_gate() != 1) continue;
     if (n->get_elim()) continue;
     assert(n->children_size() == 2);
-
+  
     Gate * l_gate = n->children_front();
     Gate * r_gate = n->children_back();
     if (l_gate->get_xor_gate() != 2) continue;
@@ -246,8 +246,8 @@ void remove_internal_xor_gates(FILE * file) {
     n->set_children_front(ll_gate);
     n->set_children_back(lr_gate);
 
-    lr_gate->parents_push_back(n);
-    ll_gate->parents_push_back(n);
+    if(lr_gate) lr_gate->parents_push_back(n);
+    if(ll_gate) ll_gate->parents_push_back(n);
     eliminate_by_one_gate(n, l_gate, file);
 
 
@@ -263,8 +263,8 @@ void remove_internal_xor_gates(FILE * file) {
       if (verbose >= 3) msg("removed %s", l_gate->get_var_name());
       counter++;
 
-      ll_gate->parents_remove(l_gate);
-      lr_gate->parents_remove(l_gate);
+      if(ll_gate) ll_gate->parents_remove(l_gate);
+      if(lr_gate) lr_gate->parents_remove(l_gate);
     } else {
       l_gate->parents_remove(n);
     }
@@ -284,8 +284,8 @@ void remove_internal_xor_gates(FILE * file) {
       if (verbose >= 3) msg("removed %s", r_gate->get_var_name());
       counter++;
 
-      ll_gate->parents_remove(r_gate);
-      lr_gate->parents_remove(r_gate);
+      if(ll_gate) ll_gate->parents_remove(r_gate);
+      if(lr_gate) lr_gate->parents_remove(r_gate);
     } else {
       r_gate->parents_remove(n);
     }

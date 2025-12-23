@@ -25,6 +25,7 @@ void init_slices() {
     assert(n->get_output());
     l.push_back(n);
     slices.push_back(l);
+    if (verbose >= 4) msg("init slice %i with output %s", i, n->get_var_name());
   }
 }
 
@@ -104,8 +105,10 @@ void slice_by_xor_chains() {
           if (!n_child->get_pp()) downwards_queue.push(n_child);
           n_child->set_slice(i);
           slices[i].push_back(n_child);
+          if (verbose >= 4) msg("xor-chain assign %s to slice %i", n_child->get_var_name(), i);
         } else if (!n_child->get_input() && !n_child->get_carry_gate()) {
           n_child->set_carry_gate(i);
+          if (verbose >= 4) msg("set carry gate for %s to %i", n_child->get_var_name(), i);
         }
       }
     }
@@ -129,7 +132,7 @@ static void move_inserted_children_from_larger_slices
           if(n_it == n_child){
             slices[i].remove(n_child);
             slices[n->get_slice()].insert(insert_pos, n_child);
-            msg("internally moved %s", n_child->get_var_name());
+              if (verbose >= 4) msg("internally moved %s", n_child->get_var_name());
             move_inserted_children_from_larger_slices(n_child, insert_pos);
             break;
           }
@@ -138,7 +141,7 @@ static void move_inserted_children_from_larger_slices
         slices[n->get_slice()].insert(insert_pos, n_child);
         slices[n_child->get_slice()].remove(n_child);
         n_child->set_slice(n->get_slice());
-        msg("moved %s", n_child->get_var_name());
+          if (verbose >= 4) msg("moved %s", n_child->get_var_name());
         move_inserted_children_from_larger_slices(n_child, insert_pos);
       }
     }

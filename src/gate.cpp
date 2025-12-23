@@ -86,12 +86,15 @@ Polynomial * Gate::get_gate_constraint() const {
 
 Gate ** gates;
 unsigned num_gates;
+// dedicated constant-0 gate
+Gate * const0_gate = 0;
 
 /*------------------------------------------------------------------------*/
 
 Gate * gate(unsigned lit) {
   assert(lit < 2*M);
-  if(lit < 2) return 0;
+  if (lit <2) return const0_gate;
+
   return gates[lit/2-1];
 }
 
@@ -105,6 +108,11 @@ void allocate_gates(bool assert) {
   gates = new Gate*[num_gates];
 
   if (!gates) die(err_allocate, "failed to allocate gates");
+
+  // create dedicated constant-0 gate
+  const0_gate = new Gate(0, std::string("0"), 0, 1);
+  if (!const0_gate) die(err_allocate, "failed to allocate constant-0 gate");
+  if (verbose >= 4) msg("allocated constant-0 gate %s", const0_gate->get_var_name());
   int level = 0;
 
   // inputs a
@@ -288,8 +296,8 @@ void mark_xor_chain_in_last_slice() {
     Gate * ll_gate = gate(ll);
     Gate * lr_gate = gate(lr);
 
-    if (ll_gate->get_xor_gate()) downwards_queue.push(ll_gate);
-    if (lr_gate->get_xor_gate()) downwards_queue.push(lr_gate);
+    if (ll_gate && ll_gate->get_xor_gate()) downwards_queue.push(ll_gate);
+    if (lr_gate && lr_gate->get_xor_gate()) downwards_queue.push(lr_gate);
 
     n->mark_xor_chain();
     if (verbose >= 4) msg("xor-chain %s", n->get_var_name());
@@ -505,6 +513,7 @@ void init_gate_constraints() {
 /*------------------------------------------------------------------------*/
 
 void delete_gates() {
+  if (const0_gate) { if (verbose >= 4) msg("deleting constant-0 gate %s", const0_gate->get_var_name()); delete(const0_gate); const0_gate = 0; }
   for (unsigned i = 0; i < num_gates; i++) {
     delete(gates[i]);
   }
