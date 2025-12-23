@@ -407,11 +407,13 @@ Polynomial * positive_poly(const Var * v) {
 
 /*------------------------------------------------------------------------*/
 static Polynomial * get_node_constraint(Gate * g, unsigned sign){
-  if(g) {
+  // If g is the dedicated constant-0 gate, treat like missing gate
+  if (g && g != const0_gate) {
     const Var * v1 = g->get_var();
     if (sign) return negative_poly(v1);
     else return positive_poly(v1);
   } else {
+    // g is NULL or constant-0: return constant 1 for negated literal, 0 otherwise
     if(sign) {
       push_mstack_end(new Monomial(one, 0));
       return build_poly();

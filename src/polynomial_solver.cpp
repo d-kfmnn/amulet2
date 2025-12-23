@@ -24,6 +24,43 @@ void init_gates_verify() {
 }
 
 /*------------------------------------------------------------------------*/
+// Print all gate constraints to `file` (if `file` is 0 prints to stdout)
+static void print_all_gate_constraints(FILE * file) {
+  for (unsigned i = NN; i < M-1; ++i) {
+    Gate * g = gates[i];
+    if (!g) continue;
+    Polynomial * p = g->get_gate_constraint();
+    if (!p) continue;
+    if (file) {
+      fprintf(file, "[amulet2] gate %s:\n", g->get_var_name());
+      p->print(file);
+      fprintf(file, "\n");
+    } else {
+      fprintf(stdout, "[amulet2] gate %s:\n", g->get_var_name());
+      p->print(stdout);
+      fprintf(stdout, "\n");
+    }
+  }
+
+  // outputs
+  for (unsigned j = 0; j < NN; ++j) {
+    Gate * g = gates[j+M-1];
+    if (!g) continue;
+    Polynomial * p = g->get_gate_constraint();
+    if (!p) continue;
+    if (file) {
+      fprintf(file, "[amulet2] output %s:\n", g->get_var_name());
+      p->print(file);
+      fprintf(file, "\n");
+    } else {
+      fprintf(stdout, "[amulet2] output %s:\n", g->get_var_name());
+      p->print(stdout);
+      fprintf(stdout, "\n");
+    }
+  }
+}
+
+/*------------------------------------------------------------------------*/
 
 bool verify(const char * inp_f, const char * out_f1,
             const char * out_f2, const char * out_f3, bool certify) {
@@ -53,6 +90,10 @@ bool verify(const char * inp_f, const char * out_f1,
 
   mark_xor_chain_in_last_slice();
   init_time = process_time();
+
+  //print gate constraints before elimination
+  print_all_gate_constraints(f2);
+
 
   remove_internal_xor_gates(f2);
   bool non_xor_slice = upper_half_xor_output();
