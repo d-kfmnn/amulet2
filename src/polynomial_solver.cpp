@@ -91,8 +91,8 @@ bool verify(const char * inp_f, const char * out_f1,
   mark_xor_chain_in_last_slice();
   init_time = process_time();
 
-  //print gate constraints before elimination
-  print_all_gate_constraints(f2);
+  //print gate constraints before elimination (to stdout, never into the proof)
+  if (verbose >= 4) print_all_gate_constraints(0);
 
 
   remove_internal_xor_gates(f2);
