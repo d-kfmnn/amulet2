@@ -157,6 +157,16 @@ const char* get_model_inputs_name(unsigned i);
 */
 unsigned slit(unsigned i);
 
+/**
+    Returns the i'th AND gate of 'aiger* model' (in file order,
+    not necessarily topologically sorted)
+
+    @param i an unsigned integer, has to be smaller than the number of ands
+
+    @return a const aiger_and *
+*/
+const aiger_and * get_model_and(unsigned i);
+
 
 /**
     Writes the 'aiger* model' to the provided file.

@@ -63,6 +63,15 @@ Depending on the `<mode>` the `<output files>` and `<options>` have to be set ac
          -p2          middle condensed proof(sequence of linear combinations, default)
          -p3          condensed proof(one single linear combination)
 
+
+exit code:
+
+    0      -verify / -certify: CORRECT MULTIPLIER
+           -substitute: output files written (rewritten aig or trivial miter)
+    1      -verify / -certify: INCORRECT MULTIPLIER
+    >= 10  error (wrong arguments, parsing error, cannot write file, ...)
+    26     operands of different width (e.g. a 16x12 multiplier), not supported
+
 --------------------------------------------------
 28.10.2022 AMulet 2.2:
   - Several bugfixes in the slicing routine, described in our TAP'22 paper [`Fuzzing and Delta Debugging And-Inverter Graph Verification Tools.`](https://danielakaufmann.at/wp-content/uploads/2022/07/TAP_Kaufmann.pdf)

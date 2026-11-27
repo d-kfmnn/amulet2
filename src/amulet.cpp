@@ -202,13 +202,18 @@ int main(int argc, char ** argv) {
   init_nonces();
 
   parse_aig(input_name);
-  bool res;
+  // exit code: 0 = CORRECT MULTIPLIER (or -substitute finished),
+  //            1 = INCORRECT MULTIPLIER, >= 10 = error (see die())
+  int exit_code = 0;
   if (mode == 1) {
     init_gate_substitution();
-    res = substitution(output_name1, output_name2);
+    // both outcomes (rewritten aig or trivial miter) write valid output
+    substitution(output_name1, output_name2);
   } else {
     init_gates_verify();
-    res = verify(input_name, output_name1, output_name2, output_name3, mode == 3);
+    bool correct =
+      verify(input_name, output_name1, output_name2, output_name3, mode == 3);
+    exit_code = correct ? 0 : 1;
   }
 
   reset_aig_parsing();
@@ -217,5 +222,5 @@ int main(int argc, char ** argv) {
   reset_time = process_time();
   print_statistics(mode);
 
-  return res;
+  return exit_code;
 }

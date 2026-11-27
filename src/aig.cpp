@@ -73,6 +73,11 @@ unsigned slit(unsigned i) {
   return model->outputs[i].lit;
 }
 /*------------------------------------------------------------------------*/
+const aiger_and * get_model_and(unsigned i) {
+  assert(i < model->num_ands);
+  return model->ands + i;
+}
+/*------------------------------------------------------------------------*/
 int write_model(FILE *file) {
   return aiger_write_to_file(model, aiger_binary_mode, file);
 }

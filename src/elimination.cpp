@@ -11,6 +11,7 @@
 /*------------------------------------------------------------------------*/
 #include <algorithm>
 #include <list>
+#include <string>
 
 #include "elimination.h"
 /*------------------------------------------------------------------------*/
@@ -889,14 +890,14 @@ void generate_witness(const Polynomial * p, const char * name) {
   if (!check_inputs_only(p))
   die(err_witness, "cannot generate witness, as remainder polynomial contains non-inputs");
 
-  #define WITNESSLEN 100
-  char witness_name[WITNESSLEN];
-  memset(witness_name, '\0', sizeof(witness_name));
-  for (int i = 0; name[i] != '.'; i++) {
-    witness_name[i] = name[i];
-  }
-  snprintf(witness_name + strlen(witness_name),
-           WITNESSLEN - strlen(witness_name), "%s", ".cex");
+  // replace the extension of the file name (not of a directory) by '.cex'
+  std::string witness_str(name);
+  size_t slash = witness_str.find_last_of('/');
+  size_t dot   = witness_str.find_last_of('.');
+  size_t base  = (slash == std::string::npos) ? 0 : slash + 1;
+  if (dot != std::string::npos && dot > base) witness_str.erase(dot);
+  witness_str += ".cex";
+  const char * witness_name = witness_str.c_str();
 
   FILE * witness_file;
   if (!(witness_file = fopen(witness_name, "w")))
